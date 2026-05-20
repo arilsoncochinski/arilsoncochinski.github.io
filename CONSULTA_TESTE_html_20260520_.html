@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Consulta Retenção ISS/IR | Fundo Rotativo e PDDE - NRE AMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e8eff5 0%, #cfdfed 100%);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(145deg, #0a2b3e 0%, #0f3b4f 100%);
+            color: white;
+            padding: 2rem 2rem 1.5rem 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .header h1 small {
+            font-size: 0.8rem;
+            font-weight: 400;
+            background: rgba(255,215,0,0.2);
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
+
+        .versao-testes {
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: rgba(255,193,7,0.25);
+            padding: 5px 12px;
+            border-radius: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,193,7,0.5);
+        }
+
+        .versao-testes::before {
+            content: "🧪";
+            font-size: 0.9rem;
+        }
+
+        .sub {
+            margin-top: 12px;
+            opacity: 0.85;
+            font-size: 0.9rem;
+        }
+
+        .alerta-api {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 16px;
+            margin-top: 16px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #78350f;
+        }
+
+        .consulta-area {
+            background: #fefcf5;
+            padding: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        .input-wrapper {
+            flex: 3;
+            min-width: 250px;
+        }
+
+        .input-wrapper label {
+            display: block;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #cfdee9;
+            border-radius: 56px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.2s;
+            outline: none;
+            font-weight: 500;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #0f3b4f;
+            box-shadow: 0 0 0 3px rgba(15, 59, 79, 0.2);
+        }
+
+        .btn-consultar {
+            background: #0f3b4f;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 56px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-consultar:hover:not(:disabled) {
+            background: #08242e;
+            transform: translateY(-2px);
+        }
+
+        .btn-consultar:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-limpar {
+            background: white;
+            border: 2px solid #b9cfdf;
+            color: #2c4b5e;
+            padding: 14px 24px;
+            border-radius: 56px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-limpar:hover {
+            background: #f1f5f9;
+            border-color: #0f3b4f;
+        }
+
+        .resultado-card {
+            margin: 1.5rem 2rem 2rem 2rem;
+            background: #f9fbfd;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 1px solid #e2edf2;
+        }
+
+        .resultado-header {
+            background: #f1f6fa;
+            padding: 1rem 1.8rem;
+            border-bottom: 1px solid #dee9f0;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0f3b4f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .btn-oficial {
+            background: linear-gradient(135deg, #1e6f3f 0%, #0d8b3e 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 28px;
+            border-radius: 56px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        .btn-oficial:hover {
+            background: linear-gradient(135deg, #0d5a33 0%, #0a6e32 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-oficial:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #0f3b4f;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .resultado-content {
+            padding: 1.6rem 1.8rem;
+        }
+
+        .info-linha {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9edf2;
+            align-items: baseline;
+        }
+
+        .info-label {
+            width: 180px;
+            font-weight: 600;
+            color: #334e68;
+        }
+
+        .info-valor {
+            flex: 1;
+            color: #0f2b38;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .regime-card {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .regime-item {
+            flex: 1;
+            min-width: 200px;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2edf2;
+        }
+
+        .regime-titulo {
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #617b94;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .botoes-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-optante {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-sim {
+            background: #dff0ec;
+            color: #0a6b5c;
+            border: 1px solid #2a9d8f;
+        }
+
+        .btn-sim:hover {
+            background: #2a9d8f;
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .btn-sim.active {
+            background: #2a9d8f;
+            color: white;
+            box-shadow: 0 2px 8px rgba(42,157,143,0.3);
+        }
+
+        .btn-sim.active .btn-icon {
+            filter: none;
+            opacity: 1;
+        }
+
+        .btn-nao {
+            background: #fee9e6;
+            color: #b13e2d;
+            border: 1px solid #e76f51;
+        }
+
+        .btn-nao:hover {
+            background: #e76f51;
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .btn-nao.active {
+            background: #e76f51;
+            color: white;
+            box-shadow: 0 2px 8px rgba(231,111,81,0.3);
+        }
+
+        .btn-nao.active .btn-icon {
+            filter: none;
+            opacity: 1;
+        }
+
+        .btn-icon {
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            filter: grayscale(100%);
+            opacity: 0.3;
+        }
+
+        .origem-card {
+            margin-top: 20px;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid #e2edf2;
+        }
+
+        .origem-titulo {
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #617b94;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .origem-botoes {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-origem {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 20px;
+            border: 2px solid #cfdee9;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            background: white;
+            color: #334e68;
+        }
+
+        .btn-origem:hover {
+            background: #eef2f6;
+            border-color: #0f3b4f;
+        }
+
+        .btn-origem.active {
+            background: #0f3b4f;
+            color: white;
+            border-color: #0f3b4f;
+        }
+
+        .servico-card {
+            margin-top: 20px;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid #e2edf2;
+        }
+
+        .servico-titulo {
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #617b94;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .servico-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #cfdee9;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .servico-select:focus {
+            border-color: #0f3b4f;
+            box-shadow: 0 0 0 3px rgba(15, 59, 79, 0.2);
+        }
+
+        .municipio-card {
+            margin-top: 20px;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid #e2edf2;
+        }
+
+        .municipio-titulo {
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #617b94;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .municipio-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #cfdee9;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .municipio-select:focus {
+            border-color: #0f3b4f;
+            box-shadow: 0 0 0 3px rgba(15, 59, 79, 0.2);
+        }
+
+        .fornecedor-municipio-card {
+            margin-top: 20px;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid #e2edf2;
+        }
+
+        .fornecedor-municipio-titulo {
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #617b94;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .fornecedor-municipio-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #cfdee9;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .fornecedor-municipio-select:focus {
+            border-color: #0f3b4f;
+            box-shadow: 0 0 0 3px rgba(15, 59, 79, 0.2);
+        }
+
+        .info-destaque {
+            background: #e8f0fe;
+            border-left: 4px solid #0f3b4f;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            color: #0f3b4f;
+        }
+
+        .info-fornecedor-outro {
+            background: #fff3e0;
+            border-left: 4px solid #f57c00;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            color: #e65100;
+            font-weight: 500;
+        }
+
+        .calculadora-card {
+            margin-top: 20px;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid #e2edf2;
+        }
+
+        .calculadora-titulo {
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #617b94;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .calculadora-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #cfdee9;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .calculadora-select:focus {
+            border-color: #0f3b4f;
+            box-shadow: 0 0 0 3px rgba(15, 59, 79, 0.2);
+        }
+
+        .calculadora-input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: flex-end;
+        }
+
+        .calculadora-input-wrapper {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .calculadora-input-wrapper label {
+            display: block;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
+        }
+
+        .calculadora-input-wrapper input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #cfdee9;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .calculadora-input-wrapper input:focus {
+            border-color: #0f3b4f;
+            box-shadow: 0 0 0 3px rgba(15, 59, 79, 0.2);
+        }
+
+        .btn-calcular {
+            background: #0f3b4f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-calcular:hover {
+            background: #08242e;
+            transform: translateY(-1px);
+        }
+
+        .resultado-calculadora {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2edf2;
+        }
+
+        .resultado-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2edf2;
+        }
+
+        .resultado-item:last-child {
+            border-bottom: none;
+        }
+
+        .resultado-label {
+            font-weight: 600;
+            color: #334e68;
+        }
+
+        .resultado-valor {
+            font-weight: 700;
+            color: #0f3b4f;
+        }
+
+        .resultado-valor.isento {
+            color: #2a9d8f;
+        }
+
+        .resultado-valor.retencao {
+            color: #e76f51;
+        }
+
+        .resultado-valor.obrigatorio {
+            color: #c62828;
+        }
+
+        .info-legislacao {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .danfe-card {
+            margin-top: 20px;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid #e2edf2;
+        }
+
+        .danfe-titulo {
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #617b94;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .mensagem-retencao {
+            margin-top: 24px;
+            padding: 18px 20px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            border-left: 5px solid;
+            transition: all 0.3s ease;
+        }
+
+        .mensagem-mei {
+            background: #e3f2fd;
+            border-left-color: #1976d2;
+            color: #0d3c61;
+        }
+
+        .mensagem-sn {
+            background: #fff3e0;
+            border-left-color: #f57c00;
+            color: #784e08;
+        }
+
+        .mensagem-outro {
+            background: #f5f5f5;
+            border-left-color: #9e9e9e;
+            color: #424242;
+        }
+
+        .mensagem-pdde-com-retencao {
+            background: #fff8e1;
+            border-left-color: #ffa000;
+            color: #e65100;
+        }
+
+        .mensagem-pdde-sem-retencao {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+            color: #1b5e20;
+        }
+
+        .mensagem-retencao-obrigatoria {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+
+        .mensagem-iss-municipal {
+            background: #fff8e1;
+            border-left-color: #ffa000;
+            color: #e65100;
+        }
+
+        .mensagem-sem-retencao {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+            color: #1b5e20;
+        }
+
+        .mensagem-lapa-sem-retencao {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+            color: #1b5e20;
+        }
+
+        .mensagem-fazenda-retencao {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+
+        .nao-encontrado, .erro-api {
+            text-align: center;
+            padding: 2.5rem;
+            color: #667c91;
+            font-weight: 500;
+        }
+
+        .erro-api {
+            color: #b13e2d;
+        }
+
+        .footer {
+            background: #fefcf5;
+            padding: 1rem 2rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #5f7d98;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .footer a {
+            color: #0f3b4f;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+            color: #08242e;
+        }
+
+        .aviso-legal {
+            font-size: 0.7rem;
+            color: #888;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+            margin-top: 5px;
+        }
+
+        .creditos {
+            font-size: 0.7rem;
+            color: #888;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .data-info {
+            font-size: 0.7rem;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid #e9edf2;
+            color: #666;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 1rem;
+            }
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .info-label {
+                width: 100%;
+                margin-bottom: 6px;
+            }
+            .info-linha {
+                flex-direction: column;
+            }
+            .footer-links {
+                flex-direction: column;
+                text-align: center;
+            }
+            .botoes-container {
+                flex-direction: column;
+            }
+            .origem-botoes {
+                flex-direction: column;
+            }
+            .btn-oficial {
+                width: 100%;
+                justify-content: center;
+            }
+            .servico-select {
+                font-size: 0.8rem;
+            }
+            .calculadora-input-group {
+                flex-direction: column;
+            }
+            .header h1 {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <h1>
+                <span>🧾 Consulta Retenção ISS/IR</span>
+                <span class="versao-testes">versão de testes</span>
+                <small>Fundo Rotativo · PDDE</small>
+            </h1>
+            <div class="sub">Consulte a retenção de ISS e IR para Fundo Rotativo e PDDE nos municípios do NRE AMS</div>
+            <div class="alerta-api">
+                ✅ <strong>Fonte oficial:</strong> Dados diretamente da BrasilAPI (base da Receita Federal) • Consultas gratuitas e em tempo real
+            </div>
+        </div>
+
+        <div class="consulta-area">
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <label>📌 CNPJ (com ou sem máscara)</label>
+                    <input type="text" id="cnpjInput" placeholder="Ex: 12.345.678/0001-90 ou 12345678000190" autocomplete="off">
+                </div>
+                <button class="btn-consultar" id="consultarBtn">🔍 Consultar</button>
+                <button class="btn-limpar" id="limparBtn">⟳ Limpar</button>
+            </div>
+        </div>
+
+        <div id="resultadoContainer">
+            <div class="resultado-card">
+                <div class="resultado-header">
+                    📋 Resultado da Consulta
+                    <a href="https://www8.receita.fazenda.gov.br/simplesnacional/aplicacoes.aspx?id=21" target="_blank" rel="noopener noreferrer" class="btn-oficial">
+                        🔗 Acessar Portal Oficial do Simples Nacional
+                    </a>
+                </div>
+                <div class="resultado-content" id="resultadoContent">
+                    <div style="text-align: center; color: #6c86a0; padding: 2rem;">
+                        🔎 Digite um CNPJ válido e clique em "Consultar"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CAMPO DE CÁLCULO DE IR PARA SERVIÇOS -->
+        <div class="calculadora-card" style="margin: 0 2rem 1rem 2rem;">
+            <div class="calculadora-titulo">📄 RETENÇÃO DE IR EM NOTAS FISCAIS DE SERVIÇO</div>
+            <div class="calculadora-input-group">
+                <div class="calculadora-input-wrapper">
+                    <label>💰 Valor do Serviço (R$)</label>
+                    <input type="number" id="valorServico" step="0.01" placeholder="Ex: 5000,00">
+                </div>
+                <div class="calculadora-input-wrapper">
+                    <label>📋 Tipo de Serviço / Produto</label>
+                    <select id="tipoServicoIR" class="calculadora-select" style="margin-bottom: 0;">
+                        <option value="1.2">🍽️ Alimentação (1,2%)</option>
+                        <option value="1.2">⚡ Energia elétrica (1,2%)</option>
+                        <option value="1.2">🔧 Serviços prestados com emprego de materiais (1,2%)</option>
+                        <option value="1.2">🏗️ Construção Civil por empreitada com emprego de materiais (1,2%)</option>
+                        <option value="1.2">🏥 Serviços hospitalares (art. 30) (1,2%)</option>
+                        <option value="1.2">🩺 Serviços de auxílio diagnóstico e terapia (art. 31) (1,2%)</option>
+                        <option value="1.2">🚛 Transporte de cargas (1,2%)</option>
+                        <option value="1.2">💊 Produtos farmacêuticos, perfumaria, toucador ou higiene pessoal (1,2%)</option>
+                        <option value="2.4">✈️ Passagens aéreas, rodoviárias e transporte de passageiros (2,4%)</option>
+                        <option value="2.4">🌍 Transporte internacional de passageiros (empresas nacionais) (2,4%)</option>
+                        <option value="2.4">🏦 Serviços bancários e financeiros (bancos, corretoras, seguros) (2,4%)</option>
+                        <option value="2.4">🩺 Seguro saúde (2,4%)</option>
+                        <option value="4.8">💧 Serviços de abastecimento de água (4,8%)</option>
+                        <option value="4.8">📞 Telefone (4,8%)</option>
+                        <option value="4.8">✉️ Correio e telégrafos (4,8%)</option>
+                        <option value="4.8">👮 Vigilância (4,8%)</option>
+                        <option value="4.8">🧹 Limpeza (4,8%)</option>
+                        <option value="4.8">👷 Locação de mão de obra (4,8%)</option>
+                        <option value="4.8">🤝 Intermediação de negócios (4,8%)</option>
+                        <option value="4.8">🏢 Administração, locação ou cessão de bens imóveis, móveis e direitos (4,8%)</option>
+                        <option value="4.8">📑 Factoring (4,8%)</option>
+                        <option value="4.8">🏥 Plano de saúde humano, veterinário ou odontológico (valores fixos) (4,8%)</option>
+                        <option value="4.8">📌 Demais serviços (4,8%)</option>
+                    </select>
+                </div>
+                <button class="btn-calcular" id="calcularServicoBtn">🔢 Calcular Retenção de IR</button>
+            </div>
+            <div id="resultadoServico" class="resultado-calculadora">
+                <div class="resultado-item">
+                    <span class="resultado-label">📋 Tipo de Serviço:</span>
+                    <span class="resultado-valor">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">💰 Valor do Serviço:</span>
+                    <span class="resultado-valor">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">🏢 Regime do Prestador:</span>
+                    <span class="resultado-valor" id="regimePrestadorDisplay">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">📋 Origem do Recurso:</span>
+                    <span class="resultado-valor" id="origemServicoDisplay">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">💸 Alíquota Aplicada:</span>
+                    <span class="resultado-valor" id="aliquotaDisplay">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">💰 Retenção de IR (IRRF):</span>
+                    <span class="resultado-valor" id="retencaoIRDisplay">-</span>
+                </div>
+                <div class="info-legislacao">
+                    📌 Base legal: IN RFB nº 1.234/2012 - Retenção de IR sobre serviços<br>
+                    💡 <strong>Regras de alíquotas:</strong><br>
+                    • <strong>1,2%</strong>: Alimentação, energia elétrica, serviços com materiais, construção civil, serviços hospitalares, transporte de cargas, produtos farmacêuticos<br>
+                    • <strong>2,4%</strong>: Passagens aéreas/rodoviárias, transporte internacional de passageiros, serviços bancários/financeiros, seguro saúde<br>
+                    • <strong>4,8%</strong>: Água, telefone, correios, vigilância, limpeza, locação de mão de obra, intermediação, factoring, planos de saúde, demais serviços
+                </div>
+            </div>
+        </div>
+
+        <!-- CAMPO DANFE - Retenção de IR em Notas de Venda -->
+        <div class="danfe-card" style="margin: 0 2rem 2rem 2rem;">
+            <div class="danfe-titulo">📄 RETENÇÃO DE IR EM NOTAS FISCAIS (DANFE) - Venda de Produtos</div>
+            <div class="calculadora-input-group">
+                <div class="calculadora-input-wrapper">
+                    <label>💰 Valor da Nota Fiscal (R$)</label>
+                    <input type="number" id="valorNota" step="0.01" placeholder="Ex: 1500,00">
+                </div>
+                <div class="calculadora-input-wrapper">
+                    <label>📦 Tipo de Produto</label>
+                    <select id="tipoProduto" class="calculadora-select" style="margin-bottom: 0;">
+                        <option value="geral">Bens e Produtos em Geral</option>
+                        <option value="combustivel">Combustíveis e derivados de petróleo</option>
+                        <option value="alcool">Álcool etílico carburante</option>
+                    </select>
+                </div>
+                <button class="btn-calcular" id="calcularIRBtn">🔢 Calcular Retenção de IR</button>
+            </div>
+            <div id="resultadoDanfe" class="resultado-calculadora">
+                <div class="resultado-item">
+                    <span class="resultado-label">📊 Tipo de Produto:</span>
+                    <span class="resultado-valor">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">💰 Valor da Nota:</span>
+                    <span class="resultado-valor">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">🏢 Regime do Fornecedor:</span>
+                    <span class="resultado-valor" id="regimeFornecedorDisplay">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">📋 Origem do Recurso:</span>
+                    <span class="resultado-valor" id="origemRecursoDisplay">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">💸 Alíquota Aplicada:</span>
+                    <span class="resultado-valor" id="aliquotaDisplay">-</span>
+                </div>
+                <div class="resultado-item">
+                    <span class="resultado-label">🔁 Valor da Retenção (IR):</span>
+                    <span class="resultado-valor" id="valorRetencaoDisplay">-</span>
+                </div>
+                <div class="info-legislacao">
+                    📌 Base legal: Instrução Normativa RFB nº 1.234/2012 (Anexo I)<br>
+                    • Bens em geral: 1,2% • Combustíveis: 0,24% • Álcool carburante: 0,24%<br>
+                    • MEI, Simples Nacional e PDDE são isentos de retenção de IR
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-links">
+                <span>✅ Fonte: <strong>BrasilAPI</strong> - Dados públicos da Receita Federal</span>
+                <span>
+                    🔗 <a href="https://www8.receita.fazenda.gov.br/simplesnacional/aplicacoes.aspx?id=21" target="_blank" rel="noopener noreferrer">
+                        Acessar portal oficial do Simples Nacional
+                    </a>
+                </span>
+            </div>
+            <div class="aviso-legal">
+                ⚠️ <strong>Importante:</strong> Este conteúdo é um guia (com base nas leis de retenção ISS e IR) para fins informativos. 
+                As informações sobre impostos e legislação podem sofrer alterações. 
+                Para orientação específica, consulte um contador ou profissional de contabilidade.
+            </div>
+            <div class="creditos">
+                💻 Desenvolvido por Arilson Cochinski | 👩‍💼 Consultoria técnica contábil Daiane Elis de Almeida
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==============================================================
+    // LISTA DE MUNICÍPIOS (ORDEM ALFABÉTICA)
+    // ==============================================================
+    const listaMunicipios = [
+        "Agudos do Sul",
+        "Araucária",
+        "Balsa Nova",
+        "Campo Largo",
+        "Campo do Tenente",
+        "Contenda",
+        "Fazenda Rio Grande",
+        "Lapa",
+        "Mandirituba",
+        "Piên",
+        "Quitandinha",
+        "Rio Negro",
+        "São José dos Pinhais",
+        "Tijucas do Sul"
+    ];
+
+    // ==============================================================
+    // LISTA COMPLETA DE SERVIÇOS - LEI COMPLEMENTAR Nº 116/2003
+    // ==============================================================
+    const listaServicos = [
+        { codigo: "1.01", descricao: "Análise e desenvolvimento de sistemas" },
+        { codigo: "1.02", descricao: "Programação" },
+        { codigo: "1.03", descricao: "Processamento, armazenamento ou hospedagem de dados, textos, imagens, vídeos, páginas eletrônicas, aplicativos e sistemas de informação, entre outros formatos, e congêneres" },
+        { codigo: "1.04", descricao: "Elaboração de programas de computadores, inclusive de jogos eletrônicos, independentemente da arquitetura construtiva da máquina em que o programa será executado, incluindo tablets, smartphones e congêneres" },
+        { codigo: "1.05", descricao: "Licenciamento ou cessão de direito de uso de programas de computação" },
+        { codigo: "1.06", descricao: "Assessoria e consultoria em informática" },
+        { codigo: "1.07", descricao: "Suporte técnico em informática, inclusive instalação, configuração e manutenção de programas de computação e bancos de dados" },
+        { codigo: "1.08", descricao: "Planejamento, confecção, manutenção e atualização de páginas eletrônicas" },
+        { codigo: "1.09", descricao: "Disponibilização, sem cessão definitiva, de conteúdos de áudio, vídeo, imagem e texto por meio da internet" },
+        { codigo: "2.01", descricao: "Serviços de pesquisas e desenvolvimento de qualquer natureza" },
+        { codigo: "3.02", descricao: "Cessão de direito de uso de marcas e de sinais de propaganda" },
+        { codigo: "3.03", descricao: "Exploração de salões de festas, centro de convenções, escritórios virtuais, stands, quadras esportivas, estádios, ginásios, auditórios, casas de espetáculos, parques de diversões, canchas e congêneres" },
+        { codigo: "3.04", descricao: "Locação, sublocação, arrendamento, direito de passagem ou permissão de uso, compartilhado ou não, de ferrovia, rodovia, postes, cabos, dutos e condutos de qualquer natureza" },
+        { codigo: "3.05", descricao: "Cessão de andaimes, palcos, coberturas e outras estruturas de uso temporário" },
+        { codigo: "4.01", descricao: "Medicina e biomedicina" },
+        { codigo: "4.02", descricao: "Análises clínicas, patologia, eletricidade médica, radioterapia, quimioterapia, ultra-sonografia, ressonância magnética, radiologia, tomografia e congêneres" },
+        { codigo: "4.03", descricao: "Hospitais, clínicas, laboratórios, sanatórios, manicômios, casas de saúde, prontos-socorros, ambulatórios e congêneres" },
+        { codigo: "4.04", descricao: "Instrumentação cirúrgica" },
+        { codigo: "4.05", descricao: "Acupuntura" },
+        { codigo: "4.06", descricao: "Enfermagem, inclusive serviços auxiliares" },
+        { codigo: "4.07", descricao: "Serviços farmacêuticos" },
+        { codigo: "4.08", descricao: "Terapia ocupacional, fisioterapia e fonoaudiologia" },
+        { codigo: "4.09", descricao: "Terapias de qualquer espécie destinadas ao tratamento físico, orgânico e mental" },
+        { codigo: "4.10", descricao: "Nutrição" },
+        { codigo: "4.11", descricao: "Obstetrícia" },
+        { codigo: "4.12", descricao: "Odontologia" },
+        { codigo: "4.13", descricao: "Ortóptica" },
+        { codigo: "4.14", descricao: "Próteses sob encomenda" },
+        { codigo: "4.15", descricao: "Psicanálise" },
+        { codigo: "4.16", descricao: "Psicologia" },
+        { codigo: "4.17", descricao: "Casas de repouso e de recuperação, creches, asilos e congêneres" },
+        { codigo: "4.18", descricao: "Inseminação artificial, fertilização in vitro e congêneres" },
+        { codigo: "4.19", descricao: "Bancos de sangue, leite, pele, olhos, óvulos, sêmen e congêneres" },
+        { codigo: "4.20", descricao: "Coleta de sangue, leite, tecidos, sêmen, órgãos e materiais biológicos de qualquer espécie" },
+        { codigo: "4.21", descricao: "Unidade de atendimento, assistência ou tratamento móvel e congêneres" },
+        { codigo: "4.22", descricao: "Planos de medicina de grupo ou individual e convênios para prestação de assistência médica, hospitalar, odontológica e congêneres" },
+        { codigo: "4.23", descricao: "Outros planos de saúde que se cumpram através de serviços de terceiros contratados, credenciados, cooperados ou apenas pagos pelo operador do plano mediante indicação do beneficiário" },
+        { codigo: "5.01", descricao: "Medicina veterinária e zootecnia" },
+        { codigo: "5.02", descricao: "Hospitais, clínicas, ambulatórios, prontos-socorros e congêneres, na área veterinária" },
+        { codigo: "5.03", descricao: "Laboratórios de análise na área veterinária" },
+        { codigo: "5.04", descricao: "Inseminação artificial, fertilização in vitro e congêneres" },
+        { codigo: "5.05", descricao: "Bancos de sangue e de órgãos e congêneres" },
+        { codigo: "5.06", descricao: "Coleta de sangue, leite, tecidos, sêmen, órgãos e materiais biológicos de qualquer espécie" },
+        { codigo: "5.07", descricao: "Unidade de atendimento, assistência ou tratamento móvel e congêneres" },
+        { codigo: "5.08", descricao: "Guarda, tratamento, amestramento, embelezamento, alojamento e congêneres" },
+        { codigo: "5.09", descricao: "Planos de atendimento e assistência médico-veterinária" },
+        { codigo: "6.01", descricao: "Barbearia, cabeleireiros, manicuros, pedicuros e congêneres" },
+        { codigo: "6.02", descricao: "Esteticistas, tratamento de pele, depilação e congêneres" },
+        { codigo: "6.03", descricao: "Banhos, duchas, sauna, massagens e congêneres" },
+        { codigo: "6.04", descricao: "Ginástica, dança, esportes, natação, artes marciais e demais atividades físicas" },
+        { codigo: "6.05", descricao: "Centros de emagrecimento, spa e congêneres" },
+        { codigo: "6.06", descricao: "Aplicação de tatuagens, piercings e congêneres" },
+        { codigo: "7.01", descricao: "Engenharia, agronomia, agrimensura, arquitetura, geologia, urbanismo, paisagismo e congêneres" },
+        { codigo: "7.02", descricao: "Execução, por administração, empreitada ou subempreitada, de obras de construção civil, hidráulica ou elétrica e de outras obras semelhantes" },
+        { codigo: "7.03", descricao: "Elaboração de planos diretores, estudos de viabilidade, estudos organizacionais e outros, relacionados com obras e serviços de engenharia" },
+        { codigo: "7.04", descricao: "Demolição" },
+        { codigo: "7.05", descricao: "Reparação, conservação e reforma de edifícios, estradas, pontes, portos e congêneres" },
+        { codigo: "7.06", descricao: "Colocação e instalação de tapetes, carpetes, assoalhos, cortinas, revestimentos de parede, vidros, divisórias, placas de gesso e congêneres" },
+        { codigo: "7.07", descricao: "Recuperação, raspagem, polimento e lustração de pisos e congêneres" },
+        { codigo: "7.08", descricao: "Calafetação" },
+        { codigo: "7.09", descricao: "Varrição, coleta, remoção, incineração, tratamento, reciclagem, separação e destinação final de lixo, rejeitos e outros resíduos quaisquer" },
+        { codigo: "7.10", descricao: "Limpeza, manutenção e conservação de vias e logradouros públicos, imóveis, chaminés, piscinas, parques, jardins e congêneres" },
+        { codigo: "7.11", descricao: "Decoração e jardinagem, inclusive corte e poda de árvores" },
+        { codigo: "7.12", descricao: "Controle e tratamento de efluentes de qualquer natureza e de agentes físicos, químicos e biológicos" },
+        { codigo: "7.13", descricao: "Dedetização, desinfecção, desinsetização, imunização, higienização, desratização, pulverização e congêneres" },
+        { codigo: "7.16", descricao: "Florestamento, reflorestamento, semeadura, adubação, reparação de solo, plantio, silagem, colheita, corte e descascamento de árvores, silvicultura, exploração florestal e dos serviços congêneres" },
+        { codigo: "7.17", descricao: "Escoramento, contenção de encostas e serviços congêneres" },
+        { codigo: "7.18", descricao: "Limpeza e dragagem de rios, portos, canais, baías, lagos, lagoas, represas, açudes e congêneres" },
+        { codigo: "7.19", descricao: "Acompanhamento e fiscalização da execução de obras de engenharia, arquitetura e urbanismo" },
+        { codigo: "7.20", descricao: "Aerofotogrametria, cartografia, mapeamento, levantamentos topográficos, batimétricos, geográficos, geodésicos, geológicos, geofísicos e congêneres" },
+        { codigo: "7.21", descricao: "Pesquisa, perfuração, cimentação, mergulho, perfilagem, concretação, testemunhagem, pescaria, estimulação e outros serviços relacionados com a exploração e explotação de petróleo, gás natural e de outros recursos minerais" },
+        { codigo: "7.22", descricao: "Nucleação e bombardeamento de nuvens e congêneres" },
+        { codigo: "8.01", descricao: "Ensino regular pré-escolar, fundamental, médio e superior" },
+        { codigo: "8.02", descricao: "Instrução, treinamento, orientação pedagógica e educacional, avaliação de conhecimentos de qualquer natureza" },
+        { codigo: "9.01", descricao: "Hospedagem de qualquer natureza em hotéis, apart-service condominiais, flat, apart-hotéis, hotéis residência, residence-service, suite service, hotelaria marítima, motéis, pensões e congêneres" },
+        { codigo: "9.02", descricao: "Agenciamento, organização, promoção, intermediação e execução de programas de turismo, passeios, viagens, excursões, hospedagens e congêneres" },
+        { codigo: "9.03", descricao: "Guias de turismo" },
+        { codigo: "10.01", descricao: "Agenciamento, corretagem ou intermediação de câmbio, de seguros, de cartões de crédito, de planos de saúde e de planos de previdência privada" },
+        { codigo: "10.02", descricao: "Agenciamento, corretagem ou intermediação de títulos em geral, valores mobiliários e contratos quaisquer" },
+        { codigo: "10.03", descricao: "Agenciamento, corretagem ou intermediação de direitos de propriedade industrial, artística ou literária" },
+        { codigo: "10.04", descricao: "Agenciamento, corretagem ou intermediação de contratos de arrendamento mercantil (leasing), de franquia (franchising) e de faturização (factoring)" },
+        { codigo: "10.05", descricao: "Agenciamento, corretagem ou intermediação de bens móveis ou imóveis" },
+        { codigo: "10.06", descricao: "Agenciamento marítimo" },
+        { codigo: "10.07", descricao: "Agenciamento de notícias" },
+        { codigo: "10.08", descricao: "Agenciamento de publicidade e propaganda, inclusive o agenciamento de veiculação por quaisquer meios" },
+        { codigo: "10.09", descricao: "Representação de qualquer natureza, inclusive comercial" },
+        { codigo: "10.10", descricao: "Distribuição de bens de terceiros" },
+        { codigo: "11.01", descricao: "Guarda e estacionamento de veículos terrestres automotores, de aeronaves e de embarcações" },
+        { codigo: "11.02", descricao: "Vigilância, segurança ou monitoramento de bens, pessoas e semoventes" },
+        { codigo: "11.03", descricao: "Escolta, inclusive de veículos e cargas" },
+        { codigo: "11.04", descricao: "Armazenamento, depósito, carga, descarga, arrumação e guarda de bens de qualquer espécie" },
+        { codigo: "11.05", descricao: "Serviços relacionados ao monitoramento e rastreamento a distância, em qualquer via ou local, de veículos, cargas, pessoas e semoventes em circulação ou movimento" },
+        { codigo: "12.01", descricao: "Espetáculos teatrais" },
+        { codigo: "12.02", descricao: "Exibições cinematográficas" },
+        { codigo: "12.03", descricao: "Espetáculos circenses" },
+        { codigo: "12.04", descricao: "Programas de auditório" },
+        { codigo: "12.05", descricao: "Parques de diversões, centros de lazer e congêneres" },
+        { codigo: "12.06", descricao: "Boates, taxi-dancing e congêneres" },
+        { codigo: "12.07", descricao: "Shows, ballet, danças, desfiles, bailes, óperas, concertos, recitais, festivais e congêneres" },
+        { codigo: "12.08", descricao: "Feiras, exposições, congressos e congêneres" },
+        { codigo: "12.09", descricao: "Bilhares, boliches e diversões eletrônicas ou não" },
+        { codigo: "12.10", descricao: "Corridas e competições de animais" },
+        { codigo: "12.11", descricao: "Competições esportivas ou de destreza física ou intelectual" },
+        { codigo: "12.12", descricao: "Execução de música" },
+        { codigo: "12.13", descricao: "Produção, mediante ou sem encomenda prévia, de eventos, espetáculos, entrevistas, shows, ballet, danças, desfiles, bailes, teatros, óperas, concertos, recitais, festivais e congêneres" },
+        { codigo: "12.14", descricao: "Fornecimento de música para ambientes fechados ou não, mediante transmissão por qualquer processo" },
+        { codigo: "12.15", descricao: "Desfiles de blocos carnavalescos ou folclóricos, trios elétricos e congêneres" },
+        { codigo: "12.16", descricao: "Exibição de filmes, entrevistas, musicais, espetáculos, shows, concertos, desfiles, óperas, competições esportivas, de destreza intelectual ou congêneres" },
+        { codigo: "12.17", descricao: "Recreação e animação, inclusive em festas e eventos de qualquer natureza" },
+        { codigo: "13.02", descricao: "Fonografia ou gravação de sons, inclusive trucagem, dublagem, mixagem e congêneres" },
+        { codigo: "13.03", descricao: "Fotografia e cinematografia, inclusive revelação, ampliação, cópia, reprodução, trucagem e congêneres" },
+        { codigo: "13.04", descricao: "Reprografia, microfilmagem e digitalização" },
+        { codigo: "13.05", descricao: "Composição gráfica, inclusive confecção de impressos gráficos, fotocomposição, clicheria, zincografia, litografia e fotolitografia" },
+        { codigo: "14.01", descricao: "Lubrificação, limpeza, lustração, revisão, carga e recarga, conserto, restauração, blindagem, manutenção e conservação de máquinas, veículos, aparelhos, equipamentos, motores, elevadores ou de qualquer objeto" },
+        { codigo: "14.02", descricao: "Assistência técnica" },
+        { codigo: "14.03", descricao: "Recondicionamento de motores" },
+        { codigo: "14.04", descricao: "Recauchutagem ou regeneração de pneus" },
+        { codigo: "14.05", descricao: "Restauração, recondicionamento, acondicionamento, pintura, beneficiamento, lavagem, secagem, tingimento, galvanoplastia, anodização, corte, recorte, plastificação, costura, acabamento, polimento e congêneres de objetos quaisquer" },
+        { codigo: "14.06", descricao: "Instalação e montagem de aparelhos, máquinas e equipamentos, inclusive montagem industrial, prestados ao usuário final, exclusivamente com material por ele fornecido" },
+        { codigo: "14.07", descricao: "Colocação de molduras e congêneres" },
+        { codigo: "14.08", descricao: "Encadernação, gravação e douração de livros, revistas e congêneres" },
+        { codigo: "14.09", descricao: "Alfaiataria e costura, quando o material for fornecido pelo usuário final, exceto aviamento" },
+        { codigo: "14.10", descricao: "Tinturaria e lavanderia" },
+        { codigo: "14.11", descricao: "Tapeçaria e reforma de estofamentos em geral" },
+        { codigo: "14.12", descricao: "Funilaria e lanternagem" },
+        { codigo: "14.13", descricao: "Carpintaria e serralheria" },
+        { codigo: "14.14", descricao: "Guincho intramunicipal, guindaste e içamento" },
+        { codigo: "15.01", descricao: "Administração de fundos quaisquer, de consórcio, de cartão de crédito ou débito e congêneres, de carteira de clientes, de cheques pré-datados e congêneres" },
+        { codigo: "15.02", descricao: "Abertura de contas em geral, inclusive conta-corrente, conta de investimentos e aplicação e caderneta de poupança, no País e no exterior, bem como a manutenção das referidas contas ativas e inativas" },
+        { codigo: "15.03", descricao: "Locação e manutenção de cofres particulares, de terminais eletrônicos, de terminais de atendimento e de bens e equipamentos em geral" },
+        { codigo: "15.04", descricao: "Fornecimento ou emissão de atestados em geral" },
+        { codigo: "15.05", descricao: "Cadastro, elaboração de ficha cadastral, renovação cadastral e congêneres" },
+        { codigo: "15.06", descricao: "Emissão, reemissão e fornecimento de avisos, comprovantes e documentos em geral" },
+        { codigo: "15.07", descricao: "Acesso, movimentação, atendimento e consulta a contas em geral" },
+        { codigo: "15.08", descricao: "Emissão, reemissão, alteração, cessão, substituição, cancelamento e registro de contrato de crédito" },
+        { codigo: "15.09", descricao: "Arrendamento mercantil (leasing) de quaisquer bens" },
+        { codigo: "15.10", descricao: "Serviços relacionados a cobranças, recebimentos ou pagamentos em geral" },
+        { codigo: "15.11", descricao: "Devolução de títulos, protesto de títulos, sustação de protesto, manutenção de títulos, reapresentação de títulos" },
+        { codigo: "15.12", descricao: "Custódia em geral, inclusive de títulos e valores mobiliários" },
+        { codigo: "15.13", descricao: "Serviços relacionados a operações de câmbio em geral" },
+        { codigo: "15.14", descricao: "Fornecimento, emissão, reemissão, renovação e manutenção de cartão magnético, cartão de crédito, cartão de débito, cartão salário e congêneres" },
+        { codigo: "15.15", descricao: "Compensação de cheques e títulos quaisquer" },
+        { codigo: "15.16", descricao: "Emissão, reemissão, liquidação, alteração, cancelamento e baixa de ordens de pagamento, ordens de crédito e similares" },
+        { codigo: "15.17", descricao: "Emissão, fornecimento, devolução, sustação, cancelamento e oposição de cheques quaisquer" },
+        { codigo: "15.18", descricao: "Serviços relacionados a crédito imobiliário" },
+        { codigo: "16.01", descricao: "Serviços de transporte coletivo municipal rodoviário, metroviário, ferroviário e aquaviário de passageiros" },
+        { codigo: "16.02", descricao: "Outros serviços de transporte de natureza municipal" },
+        { codigo: "17.01", descricao: "Assessoria ou consultoria de qualquer natureza" },
+        { codigo: "17.02", descricao: "Datilografia, digitação, estenografia, expediente, secretaria em geral, resposta audível, redação, edição, interpretação, revisão, tradução, apoio e infra-estrutura administrativa e congêneres" },
+        { codigo: "17.03", descricao: "Planejamento, coordenação, programação ou organização técnica, financeira ou administrativa" },
+        { codigo: "17.04", descricao: "Recrutamento, agenciamento, seleção e colocação de mão-de-obra" },
+        { codigo: "17.05", descricao: "Fornecimento de mão-de-obra, mesmo em caráter temporário" },
+        { codigo: "17.06", descricao: "Propaganda e publicidade, inclusive promoção de vendas, planejamento de campanhas ou sistemas de publicidade, elaboração de desenhos, textos e demais materiais publicitários" },
+        { codigo: "17.08", descricao: "Franquia (franchising)" },
+        { codigo: "17.09", descricao: "Perícias, laudos, exames técnicos e análises técnicas" },
+        { codigo: "17.10", descricao: "Planejamento, organização e administração de feiras, exposições, congressos e congêneres" },
+        { codigo: "17.11", descricao: "Organização de festas e recepções; bufê" },
+        { codigo: "17.12", descricao: "Administração em geral, inclusive de bens e negócios de terceiros" },
+        { codigo: "17.13", descricao: "Leilão e congêneres" },
+        { codigo: "17.14", descricao: "Advocacia" },
+        { codigo: "17.15", descricao: "Arbitragem de qualquer espécie, inclusive jurídica" },
+        { codigo: "17.16", descricao: "Auditoria" },
+        { codigo: "17.17", descricao: "Análise de Organização e Métodos" },
+        { codigo: "17.18", descricao: "Atuária e cálculos técnicos de qualquer natureza" },
+        { codigo: "17.19", descricao: "Contabilidade, inclusive serviços técnicos e auxiliares" },
+        { codigo: "17.20", descricao: "Consultoria e assessoria econômica ou financeira" },
+        { codigo: "17.21", descricao: "Estatística" },
+        { codigo: "17.22", descricao: "Cobrança em geral" },
+        { codigo: "17.23", descricao: "Assessoria, análise, avaliação, atendimento, consulta, cadastro, seleção, gerenciamento de informações, administração de contas a receber ou a pagar e em geral, relacionados a operações de faturização (factoring)" },
+        { codigo: "17.24", descricao: "Apresentação de palestras, conferências, seminários e congêneres" },
+        { codigo: "17.25", descricao: "Inserção de textos, desenhos e outros materiais de propaganda e publicidade, em qualquer meio" },
+        { codigo: "18.01", descricao: "Serviços de regulação de sinistros vinculados a contratos de seguros; inspeção e avaliação de riscos para cobertura de contratos de seguros; prevenção e gerência de riscos seguráveis e congêneres" },
+        { codigo: "19.01", descricao: "Serviços de distribuição e venda de bilhetes e demais produtos de loteria, bingos, cartões, pules ou cupons de apostas, sorteios, prêmios" },
+        { codigo: "20.01", descricao: "Serviços portuários, ferroportuários, utilização de porto, movimentação de passageiros, reboque de embarcações" },
+        { codigo: "20.02", descricao: "Serviços aeroportuários, utilização de aeroporto, movimentação de passageiros" },
+        { codigo: "20.03", descricao: "Serviços de terminais rodoviários, ferroviários, metroviários" },
+        { codigo: "21.01", descricao: "Serviços de registros públicos, cartorários e notariais" },
+        { codigo: "22.01", descricao: "Serviços de exploração de rodovia mediante cobrança de preço ou pedágio dos usuários" },
+        { codigo: "23.01", descricao: "Serviços de programação e comunicação visual, desenho industrial e congêneres" },
+        { codigo: "24.01", descricao: "Serviços de chaveiros, confecção de carimbos, placas, sinalização visual, banners, adesivos e congêneres" },
+        { codigo: "25.01", descricao: "Funerais, inclusive fornecimento de caixão, urna ou esquifes; aluguel de capela; transporte do corpo cadavérico" },
+        { codigo: "25.02", descricao: "Translado intramunicipal e cremação de corpos e partes de corpos cadavéricos" },
+        { codigo: "25.03", descricao: "Planos ou convênio funerários" },
+        { codigo: "25.04", descricao: "Manutenção e conservação de jazigos e cemitérios" },
+        { codigo: "25.05", descricao: "Cessão de uso de espaços em cemitérios para sepultamento" },
+        { codigo: "26.01", descricao: "Serviços de coleta, remessa ou entrega de correspondências, documentos, objetos, bens ou valores" },
+        { codigo: "27.01", descricao: "Serviços de assistência social" },
+        { codigo: "28.01", descricao: "Serviços de avaliação de bens e serviços de qualquer natureza" },
+        { codigo: "29.01", descricao: "Serviços de biblioteconomia" },
+        { codigo: "30.01", descricao: "Serviços de biologia, biotecnologia e química" },
+        { codigo: "31.01", descricao: "Serviços técnicos em edificações, eletrônica, eletrotécnica, mecânica, telecomunicações e congêneres" },
+        { codigo: "32.01", descricao: "Serviços de desenhos técnicos" },
+        { codigo: "33.01", descricao: "Serviços de desembaraço aduaneiro, comissários, despachantes e congêneres" },
+        { codigo: "34.01", descricao: "Serviços de investigações particulares, detetives e congêneres" },
+        { codigo: "35.01", descricao: "Serviços de reportagem, assessoria de imprensa, jornalismo e relações públicas" },
+        { codigo: "36.01", descricao: "Serviços de meteorologia" },
+        { codigo: "37.01", descricao: "Serviços de artistas, atletas, modelos e manequins" },
+        { codigo: "38.01", descricao: "Serviços de museologia" },
+        { codigo: "39.01", descricao: "Serviços de ourivesaria e lapidação" },
+        { codigo: "40.01", descricao: "Obras de arte sob encomenda" }
+    ];
+
+    // Códigos que exigem retenção obrigatória de ISS quando não MEI (regra geral)
+    const codigosRetencaoObrigatoria = ["3.05", "7.02", "7.04", "7.05", "7.09", "7.10", "7.12", "7.16", "7.17", "7.19", "11.02", "17.05", "17.10"];
+    
+    // Códigos específicos para Araucária, São José dos Pinhais, Tijucas do Sul e Campo Largo
+    const codigosIssMunicipiosEspecificos = [
+        "7.11", "7.18", "11.01", "11.04", 
+        "12.01", "12.02", "12.03", "12.04", "12.05", "12.06", "12.07", "12.08", "12.09", "12.10", "12.11", "12.12", "12.14", "12.15", "12.16", "12.17",
+        "16.01", "16.02", "20.01", "20.02", "20.03", "4.22", "4.23", "5.09", "15.01", "15.09"
+    ];
+
+    // Municípios da regra especial (Araucária, São José dos Pinhais, Tijucas do Sul e Campo Largo)
+    const municipiosRegraEspecial = ["Araucária", "São José dos Pinhais", "Tijucas do Sul", "Campo Largo"];
+
+    // Variáveis globais
+    let currentData = null;
+    let currentOptanteSN = false;
+    let currentOptanteMEI = false;
+    let currentOrigemRecurso = "Fundo Rotativo";
+    let currentMunicipioEscola = "";
+    let currentMunicipioFornecedor = "";
+
+    // Função para obter a alíquota baseada no tipo de serviço selecionado
+    function getAliquotaPorTipoServico(tipoServico) {
+        const valor = parseFloat(tipoServico);
+        if (!isNaN(valor)) {
+            return valor / 100; // Converte de porcentagem para decimal
+        }
+        return 0.048; // Padrão 4,8%
+    }
+
+    function getDescricaoTipoServico() {
+        const select = document.getElementById('tipoServicoIR');
+        if (select && select.selectedIndex >= 0) {
+            return select.options[select.selectedIndex].text;
+        }
+        return "Não selecionado";
+    }
+
+    // Utilitários
+    function limparMascara(valor) {
+        return valor.replace(/\D/g, '');
+    }
+
+    function formatarCNPJ(numero) {
+        if (numero && numero.length === 14) {
+            return numero.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+        }
+        return numero;
+    }
+
+    function formatarData(dataString) {
+        if (!dataString) return "Não informada";
+        const partes = dataString.split('-');
+        if (partes.length === 3) {
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+        return dataString;
+    }
+
+    function formatarMoeda(valor) {
+        if (!valor && valor !== 0) return "Não informado";
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(valor);
+    }
+
+    function getSituacaoText(situacao) {
+        if (!situacao) return "Não informada";
+        if (situacao.toLowerCase().includes("ativa")) return "🟢 ATIVA";
+        if (situacao.toLowerCase().includes("suspensa")) return "🔴 SUSPENSA";
+        if (situacao.toLowerCase().includes("inapta")) return "⚫ INAPTA";
+        if (situacao.toLowerCase().includes("baixada")) return "⚫ BAIXADA";
+        return situacao;
+    }
+
+    function getPorteText(porte) {
+        const portes = {
+            "01": "Microempresa (ME)",
+            "03": "Empresa de Pequeno Porte (EPP)",
+            "05": "Demais"
+        };
+        return portes[porte] || (porte ? `Porte ${porte}` : "Não informado");
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function isOptanteSimplesNacional(data) {
+        if (data.simples_nacional === true) return true;
+        if (typeof data.simples_nacional === 'string' && data.simples_nacional.length > 0) return true;
+        if (data.simples_nacional_data_opcao && data.simples_nacional_data_opcao !== '') return true;
+        return false;
+    }
+
+    function isOptanteMEI(data) {
+        if (data.mei === true) return true;
+        if (typeof data.mei === 'string' && data.mei.length > 0) return true;
+        if (data.mei_data_opcao && data.mei_data_opcao !== '') return true;
+        return false;
+    }
+
+    function getDataOpcaoSN(data) {
+        if (data.simples_nacional && typeof data.simples_nacional === 'string') {
+            return formatarData(data.simples_nacional);
+        }
+        if (data.simples_nacional_data_opcao) {
+            return formatarData(data.simples_nacional_data_opcao);
+        }
+        return null;
+    }
+
+    function getDataOpcaoMEI(data) {
+        if (data.mei && typeof data.mei === 'string') {
+            return formatarData(data.mei);
+        }
+        if (data.mei_data_opcao) {
+            return formatarData(data.mei_data_opcao);
+        }
+        return null;
+    }
+
+    function isCodigoComRetencaoObrigatoria(codigo) {
+        return codigosRetencaoObrigatoria.includes(codigo);
+    }
+    
+    function isCodigoIssMunicipioEspecifico(codigo) {
+        return codigosIssMunicipiosEspecificos.includes(codigo);
+    }
+    
+    function isMunicipioRegraEspecial(municipio) {
+        return municipiosRegraEspecial.includes(municipio);
+    }
+
+    // ==============================================================
+    // FUNÇÃO PARA CÁLCULO DE RETENÇÃO DE IR EM SERVIÇOS (COM ALÍQUOTAS 1,2% / 2,4% / 4,8%)
+    // ==============================================================
+    function calcularRetencaoServico() {
+        const valorServico = parseFloat(document.getElementById('valorServico').value);
+        const selectTipoServico = document.getElementById('tipoServicoIR');
+        const tipoServicoSelecionado = selectTipoServico.value;
+        const descricaoServico = selectTipoServico.options[selectTipoServico.selectedIndex]?.text || "";
+        
+        if (isNaN(valorServico) || valorServico <= 0) {
+            document.getElementById('resultadoServico').innerHTML = `
+                <div style="text-align: center; color: #c62828; padding: 1rem;">
+                    ⚠️ Por favor, insira um valor válido para o serviço
+                </div>
+                <div class="info-legislacao">
+                    📌 Base legal: IN RFB nº 1.234/2012 - Retenção de IR sobre serviços
+                </div>
+            `;
+            restaurarEstruturaServico();
+            return;
+        }
+        
+        if (!tipoServicoSelecionado) {
+            document.getElementById('resultadoServico').innerHTML = `
+                <div style="text-align: center; color: #c62828; padding: 1rem;">
+                    ⚠️ Por favor, selecione o tipo de serviço/produto
+                </div>
+                <div class="info-legislacao">
+                    📌 Base legal: IN RFB nº 1.234/2012 - Retenção de IR sobre serviços
+                </div>
+            `;
+            restaurarEstruturaServico();
+            return;
+        }
+        
+        // Obtém a alíquota baseada no tipo de serviço selecionado
+        const aliquotaDecimal = getAliquotaPorTipoServico(tipoServicoSelecionado);
+        const aliquotaPercentual = aliquotaDecimal * 100;
+        
+        // Verifica isenção de IR (MEI, Simples Nacional ou PDDE)
+        const isIsentoIR = currentOptanteMEI === true || currentOptanteSN === true || currentOrigemRecurso === "PDDE";
+        
+        let valorRetencaoIR = 0;
+        let classeIR = "";
+        let motivoIR = "";
+        
+        if (isIsentoIR) {
+            valorRetencaoIR = 0;
+            if (currentOrigemRecurso === "PDDE") {
+                motivoIR = "PDDE - Isento de IRRF";
+            } else if (currentOptanteMEI) {
+                motivoIR = "MEI - Isento de IRRF";
+            } else if (currentOptanteSN) {
+                motivoIR = "Simples Nacional - Isento de IRRF";
+            }
+            classeIR = "isento";
+        } else {
+            valorRetencaoIR = valorServico * aliquotaDecimal;
+            motivoIR = `Alíquota de ${aliquotaPercentual.toFixed(1)}%`;
+            classeIR = "retencao";
+        }
+        
+        // Atualiza o display
+        document.getElementById('resultadoServico').innerHTML = `
+            <div class="resultado-item">
+                <span class="resultado-label">📋 Tipo de Serviço:</span>
+                <span class="resultado-valor">${descricaoServico}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💰 Valor do Serviço:</span>
+                <span class="resultado-valor">${formatarMoeda(valorServico)}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">🏢 Regime do Prestador:</span>
+                <span class="resultado-valor" id="regimePrestadorDisplay">${currentOptanteMEI ? "MEI" : (currentOptanteSN ? "Simples Nacional" : "Outros regimes")}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">📋 Origem do Recurso:</span>
+                <span class="resultado-valor" id="origemServicoDisplay">${currentOrigemRecurso}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💸 Alíquota Aplicada:</span>
+                <span class="resultado-valor">${aliquotaPercentual.toFixed(1)}%</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💰 Retenção de IR (IRRF):</span>
+                <span class="resultado-valor ${classeIR}">${isIsentoIR ? "Isento" : formatarMoeda(valorRetencaoIR)} ${!isIsentoIR ? `(${motivoIR})` : `(${motivoIR})`}</span>
+            </div>
+            <div class="info-legislacao">
+                📌 Base legal: IN RFB nº 1.234/2012 - Retenção de IR sobre serviços<br>
+                💡 <strong>Regras de alíquotas:</strong><br>
+                • <strong>1,2%</strong>: Alimentação, energia elétrica, serviços com materiais, construção civil, serviços hospitalares, transporte de cargas, produtos farmacêuticos<br>
+                • <strong>2,4%</strong>: Passagens aéreas/rodoviárias, transporte internacional de passageiros, serviços bancários/financeiros, seguro saúde<br>
+                • <strong>4,8%</strong>: Água, telefone, correios, vigilância, limpeza, locação de mão de obra, intermediação, factoring, planos de saúde, demais serviços
+            </div>
+        `;
+    }
+    
+    function restaurarEstruturaServico() {
+        document.getElementById('resultadoServico').innerHTML = `
+            <div class="resultado-item">
+                <span class="resultado-label">📋 Tipo de Serviço:</span>
+                <span class="resultado-valor">-</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💰 Valor do Serviço:</span>
+                <span class="resultado-valor">-</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">🏢 Regime do Prestador:</span>
+                <span class="resultado-valor" id="regimePrestadorDisplay">${currentOptanteMEI ? "MEI" : (currentOptanteSN ? "Simples Nacional" : "Outros regimes")}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">📋 Origem do Recurso:</span>
+                <span class="resultado-valor" id="origemServicoDisplay">${currentOrigemRecurso}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💸 Alíquota Aplicada:</span>
+                <span class="resultado-valor">-</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💰 Retenção de IR (IRRF):</span>
+                <span class="resultado-valor">-</span>
+            </div>
+            <div class="info-legislacao">
+                📌 Base legal: IN RFB nº 1.234/2012 - Retenção de IR sobre serviços<br>
+                • MEI, Simples Nacional e PDDE são isentos de retenção de IR<br>
+                • Alíquotas variam conforme o tipo de serviço: 1,2% / 2,4% / 4,8%
+            </div>
+        `;
+    }
+
+    // ==============================================================
+    // FUNÇÃO PARA CÁLCULO DE RETENÇÃO DE IR (DANFE - Venda de Produtos)
+    // ==============================================================
+    function calcularRetencaoIR() {
+        const valorNota = parseFloat(document.getElementById('valorNota').value);
+        const tipoProduto = document.getElementById('tipoProduto').value;
+        
+        if (isNaN(valorNota) || valorNota <= 0) {
+            document.getElementById('resultadoDanfe').innerHTML = `
+                <div style="text-align: center; color: #c62828; padding: 1rem;">
+                    ⚠️ Por favor, insira um valor válido para a Nota Fiscal
+                </div>
+                <div class="info-legislacao">
+                    📌 Base legal: Instrução Normativa RFB nº 1.234/2012 (Anexo I)
+                </div>
+            `;
+            restaurarEstruturaDanfe();
+            return;
+        }
+        
+        let aliquota = 0;
+        let tipoProdutoTexto = "";
+        
+        switch(tipoProduto) {
+            case "geral":
+                aliquota = 0.012;
+                tipoProdutoTexto = "Bens e Produtos em Geral";
+                break;
+            case "combustivel":
+                aliquota = 0.0024;
+                tipoProdutoTexto = "Combustíveis e derivados de petróleo";
+                break;
+            case "alcool":
+                aliquota = 0.0024;
+                tipoProdutoTexto = "Álcool etílico carburante";
+                break;
+            default:
+                aliquota = 0;
+        }
+        
+        const isIsento = currentOptanteMEI === true || currentOptanteSN === true || currentOrigemRecurso === "PDDE";
+        
+        let valorRetencao = 0;
+        let aliquotaAplicada = aliquota * 100;
+        let mensagemIsencao = "";
+        let classeValor = "";
+        let motivoIsencao = "";
+        
+        if (isIsento) {
+            valorRetencao = 0;
+            if (currentOrigemRecurso === "PDDE") {
+                motivoIsencao = "PDDE não gera retenção de IR";
+            } else if (currentOptanteMEI) {
+                motivoIsencao = "MEI - Isento";
+            } else if (currentOptanteSN) {
+                motivoIsencao = "Simples Nacional - Isento";
+            }
+            mensagemIsencao = ` (${motivoIsencao})`;
+            classeValor = "isento";
+        } else {
+            valorRetencao = valorNota * aliquota;
+            classeValor = "retencao";
+        }
+        
+        document.getElementById('resultadoDanfe').innerHTML = `
+            <div class="resultado-item">
+                <span class="resultado-label">📊 Tipo de Produto:</span>
+                <span class="resultado-valor">${tipoProdutoTexto}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💰 Valor da Nota:</span>
+                <span class="resultado-valor">${formatarMoeda(valorNota)}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">🏢 Regime do Fornecedor:</span>
+                <span class="resultado-valor" id="regimeFornecedorDisplay">${currentOptanteMEI ? "MEI" : (currentOptanteSN ? "Simples Nacional" : "Outros regimes")}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">📋 Origem do Recurso:</span>
+                <span class="resultado-valor" id="origemRecursoDisplay">${currentOrigemRecurso}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💸 Alíquota Aplicada:</span>
+                <span class="resultado-valor">${aliquotaAplicada.toFixed(2)}%${mensagemIsencao}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">🔁 Valor da Retenção (IR):</span>
+                <span class="resultado-valor ${classeValor}">${isIsento ? "Isento" : formatarMoeda(valorRetencao)}</span>
+            </div>
+            <div class="info-legislacao">
+                📌 Base legal: Instrução Normativa RFB nº 1.234/2012 (Anexo I)<br>
+                • Bens em geral: 1,2% • Combustíveis: 0,24% • Álcool carburante: 0,24%<br>
+                • MEI, Simples Nacional e PDDE são isentos de retenção de IR
+            </div>
+        `;
+    }
+    
+    function restaurarEstruturaDanfe() {
+        const tipoProduto = document.getElementById('tipoProduto').value;
+        let tipoProdutoTexto = "";
+        switch(tipoProduto) {
+            case "geral": tipoProdutoTexto = "Bens e Produtos em Geral"; break;
+            case "combustivel": tipoProdutoTexto = "Combustíveis e derivados de petróleo"; break;
+            case "alcool": tipoProdutoTexto = "Álcool etílico carburante"; break;
+        }
+        
+        document.getElementById('resultadoDanfe').innerHTML = `
+            <div class="resultado-item">
+                <span class="resultado-label">📊 Tipo de Produto:</span>
+                <span class="resultado-valor">${tipoProdutoTexto}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💰 Valor da Nota:</span>
+                <span class="resultado-valor">-</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">🏢 Regime do Fornecedor:</span>
+                <span class="resultado-valor" id="regimeFornecedorDisplay">${currentOptanteMEI ? "MEI" : (currentOptanteSN ? "Simples Nacional" : "Outros regimes")}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">📋 Origem do Recurso:</span>
+                <span class="resultado-valor" id="origemRecursoDisplay">${currentOrigemRecurso}</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">💸 Alíquota Aplicada:</span>
+                <span class="resultado-valor">-</span>
+            </div>
+            <div class="resultado-item">
+                <span class="resultado-label">🔁 Valor da Retenção (IR):</span>
+                <span class="resultado-valor">-</span>
+            </div>
+            <div class="info-legislacao">
+                📌 Base legal: Instrução Normativa RFB nº 1.234/2012 (Anexo I)<br>
+                • Bens em geral: 1,2% • Combustíveis: 0,24% • Álcool carburante: 0,24%<br>
+                • MEI, Simples Nacional e PDDE são isentos de retenção de IR
+            </div>
+        `;
+    }
+    
+    function atualizarDisplayCalculadoras() {
+        const regimePrestador = document.getElementById('regimePrestadorDisplay');
+        const origemServico = document.getElementById('origemServicoDisplay');
+        const regimeFornecedor = document.getElementById('regimeFornecedorDisplay');
+        const origemRecurso = document.getElementById('origemRecursoDisplay');
+        
+        if (regimePrestador) {
+            regimePrestador.innerHTML = currentOptanteMEI ? "MEI" : (currentOptanteSN ? "Simples Nacional" : "Outros regimes");
+        }
+        if (origemServico) {
+            origemServico.innerHTML = currentOrigemRecurso;
+        }
+        if (regimeFornecedor) {
+            regimeFornecedor.innerHTML = currentOptanteMEI ? "MEI" : (currentOptanteSN ? "Simples Nacional" : "Outros regimes");
+        }
+        if (origemRecurso) {
+            origemRecurso.innerHTML = currentOrigemRecurso;
+        }
+    }
+
+    function getMensagemRetencao(optanteMEI, optanteSN, origemRecurso, codigoServico, municipioFornecedor, municipioEscola) {
+        if (optanteMEI === true) {
+            return {
+                titulo: "📌 Regime MEI - Isenção Total",
+                mensagem: "✅ Microempreendedor Individual (MEI) - Não há retenção de IR e ISS conforme regime de tributação",
+                classe: "mensagem-mei",
+                icone: "🏢"
+            };
+        }
+        
+        if (municipioEscola === "Fazenda Rio Grande") {
+            if (codigoServico && isCodigoComRetencaoObrigatoria(codigoServico)) {
+                return {
+                    titulo: "📌 FAZENDA RIO GRANDE - RETENÇÃO OBRIGATÓRIA DE ISS",
+                    mensagem: "⚠️ Obrigatório retenção de ISS conforme legislação municipal de Fazenda Rio Grande para este tipo de serviço",
+                    classe: "mensagem-fazenda-retencao",
+                    icone: "⚠️"
+                };
+            } else {
+                if (municipioFornecedor !== municipioEscola && municipioFornecedor !== "outro_municipio") {
+                    let msgIR = "";
+                    if (!optanteSN) {
+                        msgIR = " Haverá retenção de IR conforme legislação (não optante pelo Simples Nacional).";
+                    }
+                    return {
+                        titulo: "📌 FAZENDA RIO GRANDE - ISS para fornecedor de outro município",
+                        mensagem: `⚠️ Retenção de ISS por ser fornecedor de outro município.${msgIR}`,
+                        classe: "mensagem-iss-municipal",
+                        icone: "🏛️"
+                    };
+                } else if (municipioFornecedor === municipioEscola) {
+                    let msgIR = "";
+                    if (!optanteSN) {
+                        msgIR = " Haverá retenção de IR conforme legislação (não optante pelo Simples Nacional).";
+                    }
+                    return {
+                        titulo: "📌 FAZENDA RIO GRANDE - Fornecedor local",
+                        mensagem: `ℹ️ Não há retenção de ISS (fornecedor mesmo município).${msgIR}`,
+                        classe: "mensagem-outro",
+                        icone: "ℹ️"
+                    };
+                } else {
+                    let msgIR = "";
+                    if (!optanteSN) {
+                        msgIR = " Haverá retenção de IR conforme legislação (não optante pelo Simples Nacional).";
+                    }
+                    return {
+                        titulo: "📌 FAZENDA RIO GRANDE - ISS para fornecedor de outro município",
+                        mensagem: `⚠️ Retenção de ISS por ser fornecedor de outro município.${msgIR}`,
+                        classe: "mensagem-iss-municipal",
+                        icone: "🏛️"
+                    };
+                }
+            }
+        }
+        
+        if (municipioEscola === "Lapa") {
+            if (codigoServico && isCodigoComRetencaoObrigatoria(codigoServico)) {
+                return {
+                    titulo: "📌 LAPA - RETENÇÃO OBRIGATÓRIA DE ISS",
+                    mensagem: "⚠️ Obrigatório retenção de ISS conforme legislação municipal de Lapa para este tipo de serviço",
+                    classe: "mensagem-retencao-obrigatoria",
+                    icone: "⚠️"
+                };
+            } else {
+                return {
+                    titulo: "📌 LAPA - Sem retenção de ISS",
+                    mensagem: "✅ Não há retenção de ISS para este tipo de serviço no município de Lapa",
+                    classe: "mensagem-lapa-sem-retencao",
+                    icone: "✅"
+                };
+            }
+        }
+        
+        if (isMunicipioRegraEspecial(municipioEscola)) {
+            if (codigoServico && isCodigoIssMunicipioEspecifico(codigoServico)) {
+                return {
+                    titulo: `📌 ISS - ${municipioEscola}`,
+                    mensagem: "⚠️ Retenção de ISS de acordo com a legislação municipal",
+                    classe: "mensagem-iss-municipal",
+                    icone: "🏛️"
+                };
+            }
+            
+            if (origemRecurso === "Fundo Rotativo" && 
+                municipioFornecedor === "outro_municipio" && 
+                codigoServico && 
+                !isCodigoComRetencaoObrigatoria(codigoServico)) {
+                return {
+                    titulo: `📌 Fundo Rotativo - ${municipioEscola}`,
+                    mensagem: "✅ Não há retenção de ISS para este tipo de serviço (fornecedor em outro município)",
+                    classe: "mensagem-sem-retencao",
+                    icone: "✅"
+                };
+            }
+            
+            if (municipioFornecedor === municipioEscola && codigoServico && !isCodigoIssMunicipioEspecifico(codigoServico)) {
+                return {
+                    titulo: `📌 ISS - ${municipioEscola}`,
+                    mensagem: "⚠️ Retenção de ISS de acordo com a legislação municipal",
+                    classe: "mensagem-iss-municipal",
+                    icone: "🏛️"
+                };
+            }
+        }
+        
+        if (origemRecurso === "PDDE") {
+            if (codigoServico && isCodigoComRetencaoObrigatoria(codigoServico)) {
+                return {
+                    titulo: "📌 PDDE - Com retenção de ISS",
+                    mensagem: "⚠️ Retenção de ISS de acordo com a legislação municipal",
+                    classe: "mensagem-pdde-com-retencao",
+                    icone: "💰"
+                };
+            } else {
+                return {
+                    titulo: "📌 PDDE - Sem retenção de ISS",
+                    mensagem: "✅ Não há retenção de ISS para este tipo de serviço",
+                    classe: "mensagem-pdde-sem-retencao",
+                    icone: "💰"
+                };
+            }
+        }
+        
+        if (codigoServico && isCodigoComRetencaoObrigatoria(codigoServico)) {
+            return {
+                titulo: "📌 RETENÇÃO OBRIGATÓRIA DE ISS",
+                mensagem: "⚠️ Obrigatório retenção de ISS conforme legislação para este tipo de serviço",
+                classe: "mensagem-retencao-obrigatoria",
+                icone: "⚠️"
+            };
+        }
+        
+        if (origemRecurso === "Fundo Rotativo" && optanteMEI === false && optanteSN === true) {
+            let msgISS = "possível retenção de ISS dependendo do tipo de serviço";
+            if (codigoServico) {
+                msgISS = `possível retenção de ISS para o serviço ${codigoServico}, dependendo da legislação municipal`;
+            }
+            if (municipioFornecedor && municipioEscola && municipioFornecedor !== municipioEscola) {
+                msgISS += " (Fornecedor em município diferente - ISS devido ao município do prestador)";
+            }
+            return {
+                titulo: "📌 Regime Simples Nacional - Retenções",
+                mensagem: `⚠️ Isento de retenção de IR e ${msgISS}`,
+                classe: "mensagem-sn",
+                icone: "📊"
+            };
+        }
+        
+        let msgPadrao = "ℹ️ Retenção de impostos consulte legislação";
+        if (municipioFornecedor && municipioEscola && municipioFornecedor !== municipioEscola) {
+            msgPadrao += " (Fornecedor em município diferente - verificar obrigações municipais)";
+        }
+        return {
+            titulo: "📌 Regime Tributário - Retenções",
+            mensagem: msgPadrao,
+            classe: "mensagem-outro",
+            icone: "⚖️"
+        };
+    }
+
+    function atualizarMensagemRetencao() {
+        const mensagemDiv = document.getElementById('dynamicMensagemRetencao');
+        if (!mensagemDiv) return;
+        
+        const selectServico = document.getElementById('selectServico');
+        let codigoServico = "";
+        if (selectServico && selectServico.selectedIndex > 0) {
+            const selectedOption = selectServico.options[selectServico.selectedIndex];
+            codigoServico = selectedOption.value;
+        }
+        
+        const selectMunicipioEscola = document.getElementById('selectMunicipioEscola');
+        const municipioEscola = selectMunicipioEscola ? selectMunicipioEscola.value : "";
+        
+        const selectFornecedorMunicipio = document.getElementById('selectFornecedorMunicipio');
+        let municipioFornecedor = "";
+        if (selectFornecedorMunicipio && selectFornecedorMunicipio.value === "mesmo") {
+            municipioFornecedor = municipioEscola;
+        } else if (selectFornecedorMunicipio && selectFornecedorMunicipio.value === "outro") {
+            municipioFornecedor = "outro_municipio";
+        }
+        
+        const mensagemRetencao = getMensagemRetencao(currentOptanteMEI, currentOptanteSN, currentOrigemRecurso, codigoServico, municipioFornecedor, municipioEscola);
+        mensagemDiv.className = `mensagem-retencao ${mensagemRetencao.classe}`;
+        mensagemDiv.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-size: 1.3rem;">${mensagemRetencao.icone}</span>
+                <strong style="font-size: 1rem;">${mensagemRetencao.titulo}</strong>
+            </div>
+            <div style="margin-top: 8px;">
+                ${mensagemRetencao.mensagem}
+            </div>
+        `;
+    }
+
+    function atualizarBotoes() {
+        const btnSimSN = document.getElementById('btnSimSN');
+        const btnNaoSN = document.getElementById('btnNaoSN');
+        
+        if (btnSimSN && btnNaoSN) {
+            if (currentOptanteSN) {
+                btnSimSN.classList.add('active');
+                btnNaoSN.classList.remove('active');
+            } else {
+                btnSimSN.classList.remove('active');
+                btnNaoSN.classList.add('active');
+            }
+        }
+        
+        const btnSimMEI = document.getElementById('btnSimMEI');
+        const btnNaoMEI = document.getElementById('btnNaoMEI');
+        
+        if (btnSimMEI && btnNaoMEI) {
+            if (currentOptanteMEI) {
+                btnSimMEI.classList.add('active');
+                btnNaoMEI.classList.remove('active');
+            } else {
+                btnSimMEI.classList.remove('active');
+                btnNaoMEI.classList.add('active');
+            }
+        }
+        
+        const btnPDDE = document.getElementById('btnPDDE');
+        const btnFundoRotativo = document.getElementById('btnFundoRotativo');
+        
+        if (btnPDDE && btnFundoRotativo) {
+            if (currentOrigemRecurso === "PDDE") {
+                btnPDDE.classList.add('active');
+                btnFundoRotativo.classList.remove('active');
+            } else {
+                btnPDDE.classList.remove('active');
+                btnFundoRotativo.classList.add('active');
+            }
+        }
+        
+        atualizarMensagemRetencao();
+        atualizarDisplayCalculadoras();
+    }
+
+    function setOptanteSN(valor) {
+        currentOptanteSN = valor;
+        atualizarBotoes();
+    }
+    
+    function setOptanteMEI(valor) {
+        currentOptanteMEI = valor;
+        atualizarBotoes();
+    }
+    
+    function setOrigemRecurso(origem) {
+        currentOrigemRecurso = origem;
+        atualizarBotoes();
+    }
+    
+    function setServico() {
+        atualizarMensagemRetencao();
+    }
+    
+    function setMunicipioEscola() {
+        const selectMunicipioEscola = document.getElementById('selectMunicipioEscola');
+        currentMunicipioEscola = selectMunicipioEscola ? selectMunicipioEscola.value : "";
+        atualizarMensagemRetencao();
+        
+        const infoFornecedor = document.getElementById('infoFornecedorMunicipio');
+        const selectFornecedorMunicipio = document.getElementById('selectFornecedorMunicipio');
+        const infoFornecedorOutro = document.getElementById('infoFornecedorOutro');
+        
+        if (selectMunicipioEscola && selectMunicipioEscola.value && infoFornecedor) {
+            infoFornecedor.innerHTML = `📍 Fornecedor no mesmo município: ${selectMunicipioEscola.value}`;
+            infoFornecedor.style.display = 'block';
+        } else if (infoFornecedor) {
+            infoFornecedor.innerHTML = '📍 Selecione o município da escola primeiro';
+            infoFornecedor.style.display = 'block';
+        }
+        
+        if (selectFornecedorMunicipio && selectFornecedorMunicipio.value === "mesmo") {
+            if (infoFornecedorOutro) {
+                infoFornecedorOutro.style.display = 'none';
+            }
+        }
+    }
+    
+    function setFornecedorMunicipio() {
+        const selectFornecedorMunicipio = document.getElementById('selectFornecedorMunicipio');
+        const selectMunicipioEscola = document.getElementById('selectMunicipioEscola');
+        
+        if (selectFornecedorMunicipio && selectFornecedorMunicipio.value === "mesmo") {
+            currentMunicipioFornecedor = selectMunicipioEscola ? selectMunicipioEscola.value : "";
+        } else if (selectFornecedorMunicipio && selectFornecedorMunicipio.value === "outro") {
+            currentMunicipioFornecedor = "outro_municipio";
+        }
+        
+        atualizarMensagemRetencao();
+        
+        const infoFornecedorOutro = document.getElementById('infoFornecedorOutro');
+        const infoFornecedor = document.getElementById('infoFornecedorMunicipio');
+        
+        if (selectFornecedorMunicipio && selectFornecedorMunicipio.value === "outro") {
+            if (infoFornecedorOutro) {
+                infoFornecedorOutro.style.display = 'block';
+            }
+            if (infoFornecedor) {
+                infoFornecedor.style.display = 'none';
+            }
+        } else {
+            if (infoFornecedorOutro) {
+                infoFornecedorOutro.style.display = 'none';
+            }
+            if (infoFornecedor) {
+                infoFornecedor.style.display = 'block';
+            }
+        }
+    }
+
+    function renderizarOpcoesServico() {
+        let options = '<option value="">📌 Selecione o tipo de serviço prestado (Lei Complementar 116/2003)</option>';
+        for (const servico of listaServicos) {
+            options += `<option value="${servico.codigo}">${servico.codigo} - ${servico.descricao}</option>`;
+        }
+        return options;
+    }
+
+    function renderizarOpcoesMunicipio() {
+        let options = '<option value="">📌 Selecione o município onde a escola está localizada</option>';
+        for (const municipio of listaMunicipios) {
+            options += `<option value="${municipio}">🏫 ${municipio}</option>`;
+        }
+        return options;
+    }
+
+    function renderizarResultadoCompleto(data) {
+        const dataOpcaoSN = getDataOpcaoSN(data);
+        const dataOpcaoMEI = getDataOpcaoMEI(data);
+        
+        let html = `
+            <div class="info-linha">
+                <div class="info-label">📄 Razão Social:</div>
+                <div class="info-valor"><strong>${escapeHtml(data.razao_social || "Não informada")}</strong></div>
+            </div>
+            <div class="info-linha">
+                <div class="info-label">🏢 Nome Fantasia:</div>
+                <div class="info-valor">${escapeHtml(data.nome_fantasia || "Não informado")}</div>
+            </div>
+            <div class="info-linha">
+                <div class="info-label">🔢 CNPJ:</div>
+                <div class="info-valor">${escapeHtml(formatarCNPJ(data.cnpj))}</div>
+            </div>
+            <div class="info-linha">
+                <div class="info-label">📊 Situação Cadastral:</div>
+                <div class="info-valor">${getSituacaoText(data.descricao_situacao_cadastral)}</div>
+            </div>
+            <div class="info-linha">
+                <div class="info-label">🗓️ Data Abertura:</div>
+                <div class="info-valor">${data.data_inicio_atividade ? formatarData(data.data_inicio_atividade) : "Não informada"}</div>
+            </div>
+            <div class="info-linha">
+                <div class="info-label">💰 Capital Social:</div>
+                <div class="info-valor">${formatarMoeda(data.capital_social)}</div>
+            </div>
+            <div class="info-linha">
+                <div class="info-label">🏷️ Porte da Empresa:</div>
+                <div class="info-valor">${getPorteText(data.porte)}</div>
+            </div>
+            <div class="info-linha">
+                <div class="info-label">📍 Atividade Principal:</div>
+                <div class="info-valor">${data.cnae_fiscal || "Não informada"} - ${escapeHtml(data.descricao_cnae_fiscal || "Atividade não descrita")}</div>
+            </div>
+            
+            <div style="margin: 20px 0 10px 0; border-top: 2px dashed #dce5ec;"></div>
+            
+            <div class="regime-card">
+                <div class="regime-item">
+                    <div class="regime-titulo">🏛️ SIMPLES NACIONAL</div>
+                    <div class="botoes-container">
+                        <button class="btn-optante btn-sim" id="btnSimSN" onclick="setOptanteSN(true)">
+                            <span class="btn-icon">✅</span> SIM
+                        </button>
+                        <button class="btn-optante btn-nao" id="btnNaoSN" onclick="setOptanteSN(false)">
+                            <span class="btn-icon">❌</span> NÃO
+                        </button>
+                    </div>
+                    ${dataOpcaoSN ? `<div class="data-info">📅 Data de opção: ${dataOpcaoSN}</div>` : ''}
+                </div>
+                <div class="regime-item">
+                    <div class="regime-titulo">🧩 MEI (Microempreendedor Individual)</div>
+                    <div class="botoes-container">
+                        <button class="btn-optante btn-sim" id="btnSimMEI" onclick="setOptanteMEI(true)">
+                            <span class="btn-icon">✅</span> SIM
+                        </button>
+                        <button class="btn-optante btn-nao" id="btnNaoMEI" onclick="setOptanteMEI(false)">
+                            <span class="btn-icon">❌</span> NÃO
+                        </button>
+                    </div>
+                    ${dataOpcaoMEI ? `<div class="data-info">📅 Data de opção: ${dataOpcaoMEI}</div>` : ''}
+                </div>
+            </div>
+            
+            <div class="origem-card">
+                <div class="origem-titulo">💰 ORIGEM DO RECURSO</div>
+                <div class="origem-botoes">
+                    <button class="btn-origem" id="btnPDDE" onclick="setOrigemRecurso('PDDE')">
+                        PDDE
+                    </button>
+                    <button class="btn-origem" id="btnFundoRotativo" onclick="setOrigemRecurso('Fundo Rotativo')">
+                        Fundo Rotativo
+                    </button>
+                </div>
+                <div class="data-info" style="margin-top: 8px;">
+                    📌 Fundo Rotativo: regras padrão de retenção | PDDE: Retenção de ISS apenas para códigos específicos
+                </div>
+            </div>
+            
+            <div class="servico-card">
+                <div class="servico-titulo">📋 TIPO DE SERVIÇO (Lei Complementar nº 116/2003)</div>
+                <select id="selectServico" class="servico-select" onchange="setServico()">
+                    ${renderizarOpcoesServico()}
+                </select>
+                <div class="data-info" style="margin-top: 8px;">
+                    📍 Base legal: Lista de serviços anexa à Lei Complementar nº 116, de 31 de julho de 2003<br>
+                    ⚠️ <strong>Códigos com retenção obrigatória de ISS (quando NÃO MEI):</strong> 3.05, 7.02, 7.04, 7.05, 7.09, 7.10, 7.12, 7.16, 7.17, 7.19, 11.02, 17.05, 17.10<br>
+                    🏛️ <strong>Para PDDE:</strong> Apenas os códigos acima geram retenção de ISS. Demais códigos: ✅ Não há retenção de ISS<br>
+                    🏛️ <strong>Para Araucária, São José dos Pinhais, Tijucas do Sul e Campo Largo:</strong> Códigos da lista específica sempre retêm ISS.<br>
+                    🏛️ <strong>Para estes municípios:</strong> Fornecedor no mesmo município → retenção de ISS. Fornecedor em outro município → sem retenção.<br>
+                    🏛️ <strong>Para FAZENDA RIO GRANDE:</strong> Códigos da lista obrigatória → retenção de ISS. Demais serviços → retenção de ISS se fornecedor de outro município. IR retido se não optante pelo Simples Nacional.<br>
+                    🏛️ <strong>Para LAPA:</strong> Apenas os códigos acima geram retenção de ISS. Demais códigos: ✅ Não há retenção de ISS
+                </div>
+            </div>
+            
+            <div class="municipio-card">
+                <div class="municipio-titulo">🏫 MUNICÍPIO DA ESCOLA</div>
+                <select id="selectMunicipioEscola" class="municipio-select" onchange="setMunicipioEscola()">
+                    ${renderizarOpcoesMunicipio()}
+                </select>
+                <div class="data-info" style="margin-top: 8px;">
+                    📍 Selecione o município onde a escola está localizada
+                </div>
+            </div>
+            
+            <div class="fornecedor-municipio-card">
+                <div class="fornecedor-municipio-titulo">🚚 MUNICÍPIO DO FORNECEDOR</div>
+                <select id="selectFornecedorMunicipio" class="fornecedor-municipio-select" onchange="setFornecedorMunicipio()">
+                    <option value="mesmo">🏠 Mesmo município (da escola)</option>
+                    <option value="outro">🌍 Outro município</option>
+                </select>
+                <div id="infoFornecedorMunicipio" class="info-destaque">
+                    📍 Selecione o município da escola primeiro
+                </div>
+                <div id="infoFornecedorOutro" class="info-fornecedor-outro" style="display: none;">
+                    ⚠️ Fornecedor de outro município
+                </div>
+            </div>
+            
+            <div id="dynamicMensagemRetencao" class="mensagem-retencao mensagem-outro">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <span style="font-size: 1.3rem;">⚖️</span>
+                    <strong style="font-size: 1rem;">📌 Regime Tributário - Retenções</strong>
+                </div>
+                <div>ℹ️ Selecione SIM/NÃO, a origem do recurso, o tipo de serviço e os municípios para ver a mensagem correspondente</div>
+            </div>
+            
+            <div style="margin-top: 16px; font-size:0.75rem; background:#eef3f8; border-radius: 12px; padding: 10px; color:#2c5a6e;">
+                📍 Fonte: <strong>BrasilAPI</strong> - Dados públicos da Receita Federal (atualizados periodicamente)<br>
+                💡 <strong>Regras de retenção:</strong> MEI SIM → não há retenção de IR e ISS (prioridade máxima)<br>
+                🔴 <strong>Retenção obrigatória de ISS:</strong> Códigos 3.05, 7.02, 7.04, 7.05, 7.09, 7.10, 7.12, 7.16, 7.17, 7.19, 11.02, 17.05 e 17.10 (quando NÃO optante pelo MEI)<br>
+                🏛️ <strong>PDDE:</strong> Retenção de ISS apenas para os códigos acima. Demais códigos: ✅ Não há retenção de ISS<br>
+                🏛️ <strong>Araucária, São José dos Pinhais, Tijucas do Sul e Campo Largo:</strong> Códigos da lista específica sempre retêm ISS | Mesmo município → retenção de ISS | Outro município → sem retenção<br>
+                🏛️ <strong>FAZENDA RIO GRANDE:</strong> Códigos obrigatórios → retenção ISS | Demais serviços → ISS se fornecedor outro município | IR se não optante pelo SN<br>
+                🏙️ <strong>LAPA:</strong> Apenas os códigos acima geram retenção de ISS. Demais códigos: ✅ Não há retenção de ISS
+            </div>
+        `;
+        
+        return html;
+    }
+
+    async function consultarCNPJ() {
+        const inputElement = document.getElementById('cnpjInput');
+        let cnpjDigitado = inputElement.value.trim();
+        const contentDiv = document.getElementById('resultadoContent');
+        const consultarBtn = document.getElementById('consultarBtn');
+        
+        if (cnpjDigitado === "") {
+            contentDiv.innerHTML = `<div class="nao-encontrado">⚠️ Por favor, digite um CNPJ para consultar.</div>`;
+            return;
+        }
+        
+        const cnpjClean = limparMascara(cnpjDigitado);
+        
+        if (cnpjClean.length !== 14) {
+            contentDiv.innerHTML = `<div class="nao-encontrado">❌ CNPJ inválido! O CNPJ deve ter 14 dígitos.<br><span style="font-size:0.8rem;">Exemplo: 12345678000190 ou 12.345.678/0001-90</span></div>`;
+            return;
+        }
+        
+        contentDiv.innerHTML = `<div style="text-align: center; padding: 2rem;"><div class="loading" style="margin: 0 auto 12px;"></div><p>Consultando dados na Receita Federal via BrasilAPI...</p><p style="font-size: 0.8rem;">CNPJ: ${formatarCNPJ(cnpjClean)}</p></div>`;
+        
+        consultarBtn.disabled = true;
+        consultarBtn.style.opacity = "0.6";
+        
+        try {
+            const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjClean}`);
+            
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('CNPJ não encontrado');
+                if (response.status === 429) throw new Error('Muitas consultas! Aguarde um momento.');
+                throw new Error(`Erro: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (!data || !data.cnpj) throw new Error('Dados não disponíveis');
+            
+            currentData = data;
+            currentOptanteSN = isOptanteSimplesNacional(data);
+            currentOptanteMEI = isOptanteMEI(data);
+            currentOrigemRecurso = "Fundo Rotativo";
+            
+            const html = renderizarResultadoCompleto(data);
+            contentDiv.innerHTML = html;
+            
+            atualizarBotoes();
+            
+            const selectMunicipioEscola = document.getElementById('selectMunicipioEscola');
+            const infoFornecedor = document.getElementById('infoFornecedorMunicipio');
+            if (selectMunicipioEscola && selectMunicipioEscola.value && infoFornecedor) {
+                infoFornecedor.innerHTML = `📍 Fornecedor no mesmo município: ${selectMunicipioEscola.value}`;
+            }
+            
+            atualizarDisplayCalculadoras();
+            
+            console.log('Dados:', data);
+            console.log('SN:', currentOptanteSN, 'MEI:', currentOptanteMEI);
+            
+        } catch (error) {
+            contentDiv.innerHTML = `<div class="erro-api">❌ Erro: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            consultarBtn.disabled = false;
+            consultarBtn.style.opacity = "1";
+        }
+    }
+    
+    function limparConsulta() {
+        document.getElementById('cnpjInput').value = '';
+        document.getElementById('resultadoContent').innerHTML = `<div style="text-align: center; color: #6c86a0; padding: 2rem;">🔎 Digite um CNPJ válido e clique em "Consultar"</div>`;
+        currentData = null;
+        currentOptanteSN = false;
+        currentOptanteMEI = false;
+        currentOrigemRecurso = "Fundo Rotativo";
+        restaurarEstruturaServico();
+        restaurarEstruturaDanfe();
+    }
+    
+    function testarCNPJ(cnpj) {
+        document.getElementById('cnpjInput').value = cnpj;
+        consultarCNPJ();
+    }
+    
+    window.setOptanteSN = setOptanteSN;
+    window.setOptanteMEI = setOptanteMEI;
+    window.setOrigemRecurso = setOrigemRecurso;
+    window.setServico = setServico;
+    window.setMunicipioEscola = setMunicipioEscola;
+    window.setFornecedorMunicipio = setFornecedorMunicipio;
+    window.testarCNPJ = testarCNPJ;
+    
+    document.getElementById('consultarBtn').addEventListener('click', consultarCNPJ);
+    document.getElementById('limparBtn').addEventListener('click', limparConsulta);
+    document.getElementById('cnpjInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') consultarCNPJ(); });
+    
+    document.getElementById('calcularServicoBtn').addEventListener('click', calcularRetencaoServico);
+    document.getElementById('calcularIRBtn').addEventListener('click', calcularRetencaoIR);
+</script>
+</body>
+</html>

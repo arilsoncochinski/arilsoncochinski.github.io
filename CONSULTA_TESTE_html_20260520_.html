@@ -1712,8 +1712,8 @@
     // FUNÇÃO PRINCIPAL DE MENSAGEM DE RETENÇÃO (ISS e IR)
     // REGRA ATUALIZADA PARA FAZENDA RIO GRANDE:
     // Códigos obrigatórios → retenção ISS
-    // Demais serviços → ISS se fornecedor outro município
-    // IR se não optante pelo SN
+    // Demais serviços + fornecedor outro município → NÃO HÁ RETENÇÃO DE ISS
+    // IR se não optante pelo SN (aplica para todos os casos)
     // ==============================================================
     function getMensagemRetencao(optanteMEI, optanteSN, origemRecurso, codigoServico, municipioFornecedor, municipioEscola) {
         // PRIORIDADE MÁXIMA: MEI → Isento de IR e ISS
@@ -1731,29 +1731,22 @@
             let msgISS = "";
             let temRetencaoISS = false;
             let msgIR = "";
-            let temRetencaoIR = false;
             
             // REGRA ISS: Códigos obrigatórios → retenção ISS
             if (codigoServico && isCodigoComRetencaoObrigatoria(codigoServico)) {
                 temRetencaoISS = true;
                 msgISS = "⚠️ Obrigatório retenção de ISS conforme legislação municipal de Fazenda Rio Grande (código com retenção obrigatória)";
             }
-            // Demais serviços → ISS se fornecedor for de outro município
-            else if (municipioFornecedor !== municipioEscola && municipioFornecedor === "outro_municipio") {
-                temRetencaoISS = true;
-                msgISS = "⚠️ Retenção de ISS por ser fornecedor de outro município (Fazenda Rio Grande)";
-            }
+            // Demais serviços → NÃO HÁ RETENÇÃO DE ISS (independente do fornecedor)
             else {
                 temRetencaoISS = false;
-                msgISS = "✅ Não há retenção de ISS (fornecedor mesmo município)";
+                msgISS = "✅ Não há retenção de ISS para este tipo de serviço em Fazenda Rio Grande";
             }
             
             // REGRA IR: Se não optante pelo Simples Nacional → retenção de IR
             if (!optanteSN) {
-                temRetencaoIR = true;
                 msgIR = " Haverá retenção de IR conforme legislação (não optante pelo Simples Nacional).";
             } else {
-                temRetencaoIR = false;
                 msgIR = " Não há retenção de IR (optante pelo Simples Nacional).";
             }
             
@@ -1762,8 +1755,8 @@
             return {
                 titulo: "📌 FAZENDA RIO GRANDE - Retenções",
                 mensagem: mensagemFinal,
-                classe: temRetencaoISS ? "mensagem-fazenda-retencao" : "mensagem-outro",
-                icone: temRetencaoISS ? "⚠️" : "🏛️"
+                classe: temRetencaoISS ? "mensagem-fazenda-retencao" : "mensagem-sem-retencao",
+                icone: temRetencaoISS ? "⚠️" : "✅"
             };
         }
         
@@ -2159,7 +2152,7 @@
                     🏛️ <strong>Para PDDE:</strong> Apenas os códigos acima geram retenção de ISS. Demais códigos: ✅ Não há retenção de ISS<br>
                     🏛️ <strong>Para Araucária, São José dos Pinhais, Tijucas do Sul e Campo Largo:</strong> Códigos da lista específica sempre retêm ISS.<br>
                     🏛️ <strong>Para estes municípios:</strong> Fornecedor no mesmo município → retenção de ISS. Fornecedor em outro município → sem retenção.<br>
-                    🏛️ <strong>Para FAZENDA RIO GRANDE:</strong> Códigos obrigatórios → retenção ISS | Demais serviços → ISS se fornecedor outro município | IR se não optante pelo SN<br>
+                    🏛️ <strong>Para FAZENDA RIO GRANDE:</strong> Códigos obrigatórios → retenção ISS | Demais serviços → NÃO há retenção de ISS | IR se não optante pelo SN<br>
                     🏛️ <strong>Para LAPA:</strong> Apenas os códigos acima geram retenção de ISS. Demais códigos: ✅ Não há retenção de ISS
                 </div>
             </div>
@@ -2202,7 +2195,7 @@
                 🔴 <strong>Retenção obrigatória de ISS:</strong> Códigos 3.05, 7.02, 7.04, 7.05, 7.09, 7.10, 7.12, 7.16, 7.17, 7.19, 11.02, 17.05 e 17.10 (quando NÃO optante pelo MEI)<br>
                 🏛️ <strong>PDDE:</strong> Retenção de ISS apenas para os códigos acima. Demais códigos: ✅ Não há retenção de ISS<br>
                 🏛️ <strong>Araucária, São José dos Pinhais, Tijucas do Sul e Campo Largo:</strong> Códigos da lista específica sempre retêm ISS | Mesmo município → retenção de ISS | Outro município → sem retenção<br>
-                🏛️ <strong>FAZENDA RIO GRANDE:</strong> Códigos obrigatórios → retenção ISS | Demais serviços → ISS se fornecedor outro município | IR se não optante pelo SN<br>
+                🏛️ <strong>FAZENDA RIO GRANDE:</strong> Códigos obrigatórios → retenção ISS | Demais serviços → NÃO há retenção de ISS | IR se não optante pelo SN<br>
                 🏙️ <strong>LAPA:</strong> Apenas os códigos acima geram retenção de ISS. Demais códigos: ✅ Não há retenção de ISS
             </div>
         `;

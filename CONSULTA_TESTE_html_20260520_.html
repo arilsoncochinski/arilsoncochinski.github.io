@@ -1307,9 +1307,9 @@
     function getAliquotaPorTipoServico(tipoServico) {
         const valor = parseFloat(tipoServico);
         if (!isNaN(valor)) {
-            return valor / 100; // Converte de porcentagem para decimal
+            return valor / 100;
         }
-        return 0.048; // Padrão 4,8%
+        return 0.048;
     }
 
     function getDescricaoTipoServico() {
@@ -1424,7 +1424,7 @@
     }
 
     // ==============================================================
-    // FUNÇÃO PARA CÁLCULO DE RETENÇÃO DE IR EM SERVIÇOS (COM ALÍQUOTAS 1,2% / 2,4% / 4,8%)
+    // FUNÇÃO PARA CÁLCULO DE RETENÇÃO DE IR EM SERVIÇOS
     // ==============================================================
     function calcularRetencaoServico() {
         const valorServico = parseFloat(document.getElementById('valorServico').value);
@@ -1458,11 +1458,9 @@
             return;
         }
         
-        // Obtém a alíquota baseada no tipo de serviço selecionado
         const aliquotaDecimal = getAliquotaPorTipoServico(tipoServicoSelecionado);
         const aliquotaPercentual = aliquotaDecimal * 100;
         
-        // Verifica isenção de IR (MEI, Simples Nacional ou PDDE)
         const isIsentoIR = currentOptanteMEI === true || currentOptanteSN === true || currentOrigemRecurso === "PDDE";
         
         let valorRetencaoIR = 0;
@@ -1485,7 +1483,6 @@
             classeIR = "retencao";
         }
         
-        // Atualiza o display
         document.getElementById('resultadoServico').innerHTML = `
             <div class="resultado-item">
                 <span class="resultado-label">📋 Tipo de Serviço:</span>
@@ -1513,10 +1510,8 @@
             </div>
             <div class="info-legislacao">
                 📌 Base legal: IN RFB nº 1.234/2012 - Retenção de IR sobre serviços<br>
-                💡 <strong>Regras de alíquotas:</strong><br>
-                • <strong>1,2%</strong>: Alimentação, energia elétrica, serviços com materiais, construção civil, serviços hospitalares, transporte de cargas, produtos farmacêuticos<br>
-                • <strong>2,4%</strong>: Passagens aéreas/rodoviárias, transporte internacional de passageiros, serviços bancários/financeiros, seguro saúde<br>
-                • <strong>4,8%</strong>: Água, telefone, correios, vigilância, limpeza, locação de mão de obra, intermediação, factoring, planos de saúde, demais serviços
+                💡 <strong>Regras de alíquotas:</strong> 1,2% / 2,4% / 4,8% conforme tipo de serviço<br>
+                💡 <strong>Isenções:</strong> MEI, Simples Nacional e PDDE são isentos de IRRF
             </div>
         `;
     }
@@ -1549,8 +1544,7 @@
             </div>
             <div class="info-legislacao">
                 📌 Base legal: IN RFB nº 1.234/2012 - Retenção de IR sobre serviços<br>
-                • MEI, Simples Nacional e PDDE são isentos de retenção de IR<br>
-                • Alíquotas variam conforme o tipo de serviço: 1,2% / 2,4% / 4,8%
+                • MEI, Simples Nacional e PDDE são isentos de retenção de IR
             </div>
         `;
     }
@@ -1714,7 +1708,15 @@
         }
     }
 
+    // ==============================================================
+    // FUNÇÃO PRINCIPAL DE MENSAGEM DE RETENÇÃO (ISS e IR)
+    // REGRA ATUALIZADA PARA FAZENDA RIO GRANDE:
+    // Códigos obrigatórios → retenção ISS
+    // Demais serviços → ISS se fornecedor outro município
+    // IR se não optante pelo SN
+    // ==============================================================
     function getMensagemRetencao(optanteMEI, optanteSN, origemRecurso, codigoServico, municipioFornecedor, municipioEscola) {
+        // PRIORIDADE MÁXIMA: MEI → Isento de IR e ISS
         if (optanteMEI === true) {
             return {
                 titulo: "📌 Regime MEI - Isenção Total",
@@ -1724,129 +1726,144 @@
             };
         }
         
+        // REGRA ESPECIAL PARA FAZENDA RIO GRANDE (ATUALIZADA)
         if (municipioEscola === "Fazenda Rio Grande") {
+            let msgISS = "";
+            let temRetencaoISS = false;
+            let msgIR = "";
+            let temRetencaoIR = false;
+            
+            // REGRA ISS: Códigos obrigatórios → retenção ISS
             if (codigoServico && isCodigoComRetencaoObrigatoria(codigoServico)) {
-                return {
-                    titulo: "📌 FAZENDA RIO GRANDE - RETENÇÃO OBRIGATÓRIA DE ISS",
-                    mensagem: "⚠️ Obrigatório retenção de ISS conforme legislação municipal de Fazenda Rio Grande para este tipo de serviço",
-                    classe: "mensagem-fazenda-retencao",
-                    icone: "⚠️"
-                };
-            } else {
-                if (municipioFornecedor !== municipioEscola && municipioFornecedor !== "outro_municipio") {
-                    let msgIR = "";
-                    if (!optanteSN) {
-                        msgIR = " Haverá retenção de IR conforme legislação (não optante pelo Simples Nacional).";
-                    }
-                    return {
-                        titulo: "📌 FAZENDA RIO GRANDE - ISS para fornecedor de outro município",
-                        mensagem: `⚠️ Retenção de ISS por ser fornecedor de outro município.${msgIR}`,
-                        classe: "mensagem-iss-municipal",
-                        icone: "🏛️"
-                    };
-                } else if (municipioFornecedor === municipioEscola) {
-                    let msgIR = "";
-                    if (!optanteSN) {
-                        msgIR = " Haverá retenção de IR conforme legislação (não optante pelo Simples Nacional).";
-                    }
-                    return {
-                        titulo: "📌 FAZENDA RIO GRANDE - Fornecedor local",
-                        mensagem: `ℹ️ Não há retenção de ISS (fornecedor mesmo município).${msgIR}`,
-                        classe: "mensagem-outro",
-                        icone: "ℹ️"
-                    };
-                } else {
-                    let msgIR = "";
-                    if (!optanteSN) {
-                        msgIR = " Haverá retenção de IR conforme legislação (não optante pelo Simples Nacional).";
-                    }
-                    return {
-                        titulo: "📌 FAZENDA RIO GRANDE - ISS para fornecedor de outro município",
-                        mensagem: `⚠️ Retenção de ISS por ser fornecedor de outro município.${msgIR}`,
-                        classe: "mensagem-iss-municipal",
-                        icone: "🏛️"
-                    };
-                }
+                temRetencaoISS = true;
+                msgISS = "⚠️ Obrigatório retenção de ISS conforme legislação municipal de Fazenda Rio Grande (código com retenção obrigatória)";
             }
+            // Demais serviços → ISS se fornecedor for de outro município
+            else if (municipioFornecedor !== municipioEscola && municipioFornecedor === "outro_municipio") {
+                temRetencaoISS = true;
+                msgISS = "⚠️ Retenção de ISS por ser fornecedor de outro município (Fazenda Rio Grande)";
+            }
+            else {
+                temRetencaoISS = false;
+                msgISS = "✅ Não há retenção de ISS (fornecedor mesmo município)";
+            }
+            
+            // REGRA IR: Se não optante pelo Simples Nacional → retenção de IR
+            if (!optanteSN) {
+                temRetencaoIR = true;
+                msgIR = " Haverá retenção de IR conforme legislação (não optante pelo Simples Nacional).";
+            } else {
+                temRetencaoIR = false;
+                msgIR = " Não há retenção de IR (optante pelo Simples Nacional).";
+            }
+            
+            let mensagemFinal = msgISS + msgIR;
+            
+            return {
+                titulo: "📌 FAZENDA RIO GRANDE - Retenções",
+                mensagem: mensagemFinal,
+                classe: temRetencaoISS ? "mensagem-fazenda-retencao" : "mensagem-outro",
+                icone: temRetencaoISS ? "⚠️" : "🏛️"
+            };
         }
         
+        // REGRA ESPECIAL PARA LAPA
         if (municipioEscola === "Lapa") {
             if (codigoServico && isCodigoComRetencaoObrigatoria(codigoServico)) {
+                let msgIR = "";
+                if (!optanteSN) {
+                    msgIR = " Haverá retenção de IR (não optante pelo Simples Nacional).";
+                }
                 return {
                     titulo: "📌 LAPA - RETENÇÃO OBRIGATÓRIA DE ISS",
-                    mensagem: "⚠️ Obrigatório retenção de ISS conforme legislação municipal de Lapa para este tipo de serviço",
+                    mensagem: `⚠️ Obrigatório retenção de ISS conforme legislação municipal de Lapa para este tipo de serviço.${msgIR}`,
                     classe: "mensagem-retencao-obrigatoria",
                     icone: "⚠️"
                 };
             } else {
+                let msgIR = "";
+                if (!optanteSN) {
+                    msgIR = " Haverá retenção de IR (não optante pelo Simples Nacional).";
+                }
                 return {
                     titulo: "📌 LAPA - Sem retenção de ISS",
-                    mensagem: "✅ Não há retenção de ISS para este tipo de serviço no município de Lapa",
+                    mensagem: `✅ Não há retenção de ISS para este tipo de serviço no município de Lapa.${msgIR}`,
                     classe: "mensagem-lapa-sem-retencao",
                     icone: "✅"
                 };
             }
         }
         
+        // REGRA ESPECIAL PARA ARAUCÁRIA, SÃO JOSÉ DOS PINHAIS, TIJUCAS DO SUL E CAMPO LARGO
         if (isMunicipioRegraEspecial(municipioEscola)) {
+            let msgISS = "";
+            let temRetencaoISS = false;
+            
             if (codigoServico && isCodigoIssMunicipioEspecifico(codigoServico)) {
-                return {
-                    titulo: `📌 ISS - ${municipioEscola}`,
-                    mensagem: "⚠️ Retenção de ISS de acordo com a legislação municipal",
-                    classe: "mensagem-iss-municipal",
-                    icone: "🏛️"
-                };
+                temRetencaoISS = true;
+                msgISS = "⚠️ Retenção de ISS (código específico da lista)";
+            } else if (municipioFornecedor === municipioEscola) {
+                temRetencaoISS = true;
+                msgISS = `⚠️ Retenção de ISS (fornecedor mesmo município - ${municipioEscola})`;
+            } else if (origemRecurso === "Fundo Rotativo" && municipioFornecedor === "outro_municipio" && !isCodigoComRetencaoObrigatoria(codigoServico)) {
+                temRetencaoISS = false;
+                msgISS = "✅ Não há retenção de ISS (fornecedor em outro município)";
+            } else {
+                temRetencaoISS = false;
+                msgISS = "✅ Não há retenção de ISS";
             }
             
-            if (origemRecurso === "Fundo Rotativo" && 
-                municipioFornecedor === "outro_municipio" && 
-                codigoServico && 
-                !isCodigoComRetencaoObrigatoria(codigoServico)) {
-                return {
-                    titulo: `📌 Fundo Rotativo - ${municipioEscola}`,
-                    mensagem: "✅ Não há retenção de ISS para este tipo de serviço (fornecedor em outro município)",
-                    classe: "mensagem-sem-retencao",
-                    icone: "✅"
-                };
+            let msgIR = "";
+            if (!optanteSN) {
+                msgIR = " Haverá retenção de IR (não optante pelo Simples Nacional).";
             }
             
-            if (municipioFornecedor === municipioEscola && codigoServico && !isCodigoIssMunicipioEspecifico(codigoServico)) {
-                return {
-                    titulo: `📌 ISS - ${municipioEscola}`,
-                    mensagem: "⚠️ Retenção de ISS de acordo com a legislação municipal",
-                    classe: "mensagem-iss-municipal",
-                    icone: "🏛️"
-                };
-            }
+            return {
+                titulo: `📌 ISS - ${municipioEscola}`,
+                mensagem: `${msgISS}.${msgIR}`,
+                classe: temRetencaoISS ? "mensagem-iss-municipal" : "mensagem-sem-retencao",
+                icone: temRetencaoISS ? "🏛️" : "✅"
+            };
         }
         
+        // REGRA ESPECIAL: PDDE
         if (origemRecurso === "PDDE") {
+            let msgIR = "";
+            if (!optanteSN) {
+                msgIR = " Haverá retenção de IR (não optante pelo Simples Nacional).";
+            }
             if (codigoServico && isCodigoComRetencaoObrigatoria(codigoServico)) {
                 return {
                     titulo: "📌 PDDE - Com retenção de ISS",
-                    mensagem: "⚠️ Retenção de ISS de acordo com a legislação municipal",
+                    mensagem: `⚠️ Retenção de ISS de acordo com a legislação municipal.${msgIR}`,
                     classe: "mensagem-pdde-com-retencao",
                     icone: "💰"
                 };
             } else {
                 return {
                     titulo: "📌 PDDE - Sem retenção de ISS",
-                    mensagem: "✅ Não há retenção de ISS para este tipo de serviço",
+                    mensagem: `✅ Não há retenção de ISS para este tipo de serviço.${msgIR}`,
                     classe: "mensagem-pdde-sem-retencao",
                     icone: "💰"
                 };
             }
         }
         
+        // REGRA GERAL: Códigos com retenção obrigatória de ISS
         if (codigoServico && isCodigoComRetencaoObrigatoria(codigoServico)) {
+            let msgIR = "";
+            if (!optanteSN) {
+                msgIR = " Haverá retenção de IR (não optante pelo Simples Nacional).";
+            }
             return {
                 titulo: "📌 RETENÇÃO OBRIGATÓRIA DE ISS",
-                mensagem: "⚠️ Obrigatório retenção de ISS conforme legislação para este tipo de serviço",
+                mensagem: `⚠️ Obrigatório retenção de ISS conforme legislação para este tipo de serviço.${msgIR}`,
                 classe: "mensagem-retencao-obrigatoria",
                 icone: "⚠️"
             };
         }
         
+        // Fundo Rotativo com MEI = NÃO e SN = SIM
         if (origemRecurso === "Fundo Rotativo" && optanteMEI === false && optanteSN === true) {
             let msgISS = "possível retenção de ISS dependendo do tipo de serviço";
             if (codigoServico) {
@@ -1863,9 +1880,13 @@
             };
         }
         
+        // Caso padrão
         let msgPadrao = "ℹ️ Retenção de impostos consulte legislação";
         if (municipioFornecedor && municipioEscola && municipioFornecedor !== municipioEscola) {
             msgPadrao += " (Fornecedor em município diferente - verificar obrigações municipais)";
+        }
+        if (!optanteSN) {
+            msgPadrao += " Haverá retenção de IR (não optante pelo Simples Nacional).";
         }
         return {
             titulo: "📌 Regime Tributário - Retenções",
@@ -2138,7 +2159,7 @@
                     🏛️ <strong>Para PDDE:</strong> Apenas os códigos acima geram retenção de ISS. Demais códigos: ✅ Não há retenção de ISS<br>
                     🏛️ <strong>Para Araucária, São José dos Pinhais, Tijucas do Sul e Campo Largo:</strong> Códigos da lista específica sempre retêm ISS.<br>
                     🏛️ <strong>Para estes municípios:</strong> Fornecedor no mesmo município → retenção de ISS. Fornecedor em outro município → sem retenção.<br>
-                    🏛️ <strong>Para FAZENDA RIO GRANDE:</strong> Códigos da lista obrigatória → retenção de ISS. Demais serviços → retenção de ISS se fornecedor de outro município. IR retido se não optante pelo Simples Nacional.<br>
+                    🏛️ <strong>Para FAZENDA RIO GRANDE:</strong> Códigos obrigatórios → retenção ISS | Demais serviços → ISS se fornecedor outro município | IR se não optante pelo SN<br>
                     🏛️ <strong>Para LAPA:</strong> Apenas os códigos acima geram retenção de ISS. Demais códigos: ✅ Não há retenção de ISS
                 </div>
             </div>
